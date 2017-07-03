@@ -1,0 +1,12 @@
+{
+"id" : "presence",
+"name" : "Presence",
+"licence" : "AGPL",
+"author" : "updated by NB",
+"require" : "2.4",
+"category" : "organization",
+"hasDependency" : false,
+"hasOwnDeamon" : true,
+"maxDependancyInstallTime" : 45
+}
+ 

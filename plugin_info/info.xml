@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<info>
+    <id>presence</id>
+    <name>Présence</name>
+    <description>Plugin pour la gestion de la présence dans le domicile</description>
+    <icon>icon jeedom-mouvement</icon>
+    <licence>AGPL</licence>
+    <author>Cédric GUINE modifé par NB</author>
+    <require>2.0</require>
+    <version>3.0</version> 
+    <category>organization</category>
+</info>

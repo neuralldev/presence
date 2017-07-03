@@ -1,0 +1,26 @@
+<div style="width:30px;min-height:20px;margin-top:5px;" class="cmd #history# tooltips cmd-widget cursor" data-type="info" data-subtype="string" data-cmd_id="#id#" data-cmd_uid="#uid#" title="Verrouillage">
+    <center>
+        <span class='label label-default hidden' style="font-size: 0.8em;"> #state#</span>
+        <span style="font-size: 0.8em;font-weight: bold" class="label label-success action iconCmd#uid#"></span>
+    </center>
+	<script type="text/javascript">
+		if("#state#" == "1"){
+			$(".iconCmd#uid#").removeClass('label-success').addClass('label-danger');
+			$(".iconCmd#uid#").append('<i class="icon fa fa-lock"><\/i>');
+			if (('#name#') == 'lock') {
+                $('.cmd[data-cmd_uid=#uid#]').hide();
+            }
+		}else{
+			$(".iconCmd#uid#").removeClass('label-danger').addClass('label-success');
+			$(".iconCmd#uid#").append('<i class="icon fa fa-unlock"><\/i>');
+			if (('#name#') == 'unlock') {
+                $('.cmd[data-cmd_uid=#uid#]').hide();
+            }
+		}
+		$('.cmd[data-cmd_uid=#uid#] .action').off();
+        $('.cmd[data-cmd_uid=#uid#] .action').on('click', function () {
+			console.log("bug");
+            jeedom.cmd.execute({id: '#id#'});
+        });
+	</script>
+</div>

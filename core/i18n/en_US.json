@@ -1,0 +1,7 @@
+{
+    "plugins\/presence\/core\/class\/presence.class.php": {
+        "Mode": "Mode",
+        "Exécution de ": "Exécution de ",
+        "Exécution de la commande ": "Exécution de la commande "
+    }
+}

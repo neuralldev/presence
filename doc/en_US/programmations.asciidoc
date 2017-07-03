@@ -1,0 +1,12 @@
+L'onglet Programmations vous permet de gérer les différents paramètres de fonctionnement du module. 
+
+image::../images/presence_programmations1.png[]
+
+Priorité des modes permet de modifier l'ordre de vérification de ceux-ci et d'en rendre plus prioritaire. 
+De base l'ordre utilisé est Présent -> Travail -> Nuit -> Absent, je conseille de laisser ce fonctionnement qui conviendra à la majorité des cas. 
+
+Simulation permet de choisir les modes pour lesquels la simulation est active. 
+Par défaut elle est active seulement pour le mode Vacance. 
+
+Affichage permet de masquer les modes que vous ne souhaitez pas afficher. Pour cela il suffit de décocher les modes à ne pas traiter puis de valider. 
+image::../images/presence_programmations2.png[]

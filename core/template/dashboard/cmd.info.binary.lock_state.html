@@ -1,0 +1,15 @@
+<div style="width:120px;min-height:20px;" class="cmd #history# tooltips cmd-widget" data-type="info" data-subtype="string" data-cmd_id="#id#" title="#collectDate#">
+    <center>
+        <span class='label label-default hidden' style="font-size: 0.8em;"> #state#</span>
+        <span id="state_icon_#id#" class='label label-success' style="font-size: 0.8em;"> </span>
+    </center>
+	<script type="text/javascript">
+		if("#state#" == "1"){
+			$("#state_icon_#id#").removeClass('label-success').addClass('label-danger');
+			$("#state_icon_#id#").append('<i class="icon fa fa-lock"><\/i>');
+		}else{
+			$("#state_icon_#id#").removeClass('label-danger').addClass('label-success');
+			$("#state_icon_#id#").append('<i class="icon fa fa-unlock"><\/i>');
+		}
+	</script>
+</div>
