@@ -26,7 +26,7 @@
 }*/
 
 require_once dirname(__FILE__) . "/../../../../core/php/core.inc.php";
-log::add('presence', 'info','----- JPresence -----');
+log::add('presence', 'info','Debut traitement JPresence');
 if (isset($argv)) {
     foreach ($argv as $arg) {
         $argList = explode('=', $arg);
@@ -36,23 +36,21 @@ if (isset($argv)) {
     }
 }
 
-$array_recu = "";
-foreach ($_GET as $key => $value){
-    $array_recu = $array_recu . $key . $value . ' / ';
+log::add('presence', 'debug', 'Trame ' . json_encode($_GET, true));
+
+if ($_GET['cmd_id']==NULL || $_GET['date']==NULL || $_GET['jeedom_token']==NULL) {
+    log::add('presence', 'error', __('argument obligatoire non trouvé dans retour json'));
+    die(__('argument obligatoire non trouvé dans retour json ', __FILE__));
 }
+    
 
-log::add('presence', 'debug', 'Trame recu ' . $array_recu);
-
-
-
-log::add('presence', 'info','JPresence : Récupération argument ok');
 $eqLogic = null;
 $cmd = cmd::byId($_GET['cmd_id']);
 $eqLogic_id = $cmd->getEqLogic_id();
 $eqLogic = eqLogic::byId($eqLogic_id);
 
 if (!is_object($eqLogic)) {
-    log::add('presence', 'info', __('Presence non trouvé verifier id : ', __FILE__) . init('eqLogic_id'));
+    log::add('presence', 'error', __('Presence non trouvé verifier id : ', __FILE__) . init('eqLogic_id'));
     die(__('Presence non trouvé vérifier id : ', __FILE__) . init('eqLogic_id'));
 }
 if ($eqLogic->getIsEnable() != 1) {
@@ -76,6 +74,5 @@ if ($cmd != null) {
 $eqLogic->setConfiguration("holiday_comeback",$_GET['date']);
 $eqLogic->save();
 $eqLogic->refreshWidget();
-log::add('presence', 'info','JPresence : changement date retour');
-
+log::add('presence', 'info','fin traitement JPresence');
 ?>

@@ -851,7 +851,7 @@ class presence extends eqLogic {
 						log::add('presence','debug','datetime2 : ' . intval($datetime2) . ' / datetime1 : ' . intval($datetime1));
 						log::add('presence','debug','Interval (s): ' . intval($interval));
 						if($interval > intval($_action_depart['waitDelay']*60)){
-							log::add('presence', 'debug', 'Délai OK');
+							log::add('presence', 'debug', 'On a atteint l\'heure de retour');
 							if($_action_depart['cmd'] == 'scenario'){
 								log::add('presence', 'info', 'Exécution du scénario ' . $_action_depart['options']['scenario_id']);
 							}
@@ -1283,8 +1283,12 @@ class presence extends eqLogic {
 				$cron->setSchedule(presence::$_time_tmp . ' * * * *');
 				$cron->save();
 			}
-			
-			log::add('presence','debug','==> Prochain check auto : ' . presence::$_time_tmp);
+			if (date('i')< presence::$_time_tmp)
+                            $_time_hour = date('H');
+                        else
+                            $_time_hour = date('H')+1;
+                        if ($_time_hour > 23) $_time_hour -= 23;
+			log::add('presence','debug','==> Prochain check auto : '.$_time_hour. ':'. (presence::$_time_tmp<=9?'0':'').presence::$_time_tmp);
 			log::add('presence','debug','-----------------------------------------------------------------------');
 			$this->refreshWidget();
 		}
@@ -1485,7 +1489,7 @@ class presenceCmd extends cmd {
     }
 
     public function execute($_options = array()) {
-		log::add('presence', 'debug', 'Passage dans le execute ==> ' . $this->getLogicalId());
+		log::add('presence', 'debug', 'Changement de mode vers ' . $this->getLogicalId());
 		$eqLogic = $this->getEqLogic();	
 				
 		$lockState = $eqLogic->getCmd(null, 'lock_state');
