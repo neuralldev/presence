@@ -806,7 +806,7 @@ class presence extends eqLogic {
         foreach ($action_depart as $_action_depart) {
             if ($_action_depart['cmd'] == 'scenario') {
                 $_tmp_scenario = scenario::byID($_action_depart['options']['scenario_id']);
-                log::add('presence', 'debug', 'Exécution du scénario ' . $_tmp_scenario->getName());
+                log::add('presence', 'debug', 'Exécution du scénario ' . $_action_depart['options']['scenario_id'].' '.$_tmp_scenario->getName());
 //                log::add('presence', 'debug', 'déclenchement scenario : ' . $_action_depart['options']['scenario_id']);
                 $allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $_action_depart['options']['scenario_id'] . '::exec_depart', false, true);
             } else {
@@ -886,12 +886,9 @@ class presence extends eqLogic {
                     $datetime1 = $datetime1->format('U');
                     $datetime2 = time();
                     $interval = $datetime2 - $datetime1;
-                    log::add('presence', 'debug', 'datetime1 (s): ' . $datetime1);
-                    log::add('presence', 'debug', 'datetime2 (s): ' . $datetime2);
-                    log::add('presence', 'debug', 'Interval (s): ' . intval($interval));
-                    log::add('presence', 'debug', 'WaitTime (s): ' . intval('-' . $_action_arrivee['waitDelay'] * 60));
+                    log::add('presence', 'debug', 'datetime1 (s): ' . $datetime1. ' datetime2 (s): ' . $datetime2. ' Interval (s): ' . intval($interval).' WaitTime (s): ' . intval('-' . $_action_arrivee['waitDelay'] * 60));
                     if ($interval > intval('-' . $_action_arrivee['waitDelay'] * 60)) {
-                        log::add('presence', 'debug', 'Délai OK');
+                        log::add('presence', 'debug', 'Délai de déclenchement OK');
                         if ($_action_arrivee['cmd'] == 'scenario') {
                             $_tmp_scenario = scenario::byID($_action_arrivee['options']['scenario_id']);
                             log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
@@ -912,7 +909,7 @@ class presence extends eqLogic {
                           $cmd->execCmd($options); */
                         cache::set('presence::' . $this->getId() . '::' . str_replace('#', '', $_action_arrivee['cmd']) . '::exec_arrivee', 1, 0);
                     } else {
-                        log::add('presence', 'debug', 'Délai NOK');
+                        log::add('presence', 'debug', 'Délai non atteint, on patiente avant lancement');
                         $calcul_next_update[str_replace('#', '', $_action_arrivee['cmd'])] = intval($_action_arrivee['waitDelay'] * 60) - $interval;
                     }
                 } catch (Exception $e) {
