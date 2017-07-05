@@ -805,11 +805,13 @@ class presence extends eqLogic {
 
         foreach ($action_depart as $_action_depart) {
             if ($_action_depart['cmd'] == 'scenario') {
-                log::add('presence', 'debug', 'déclenchement scenario : ' . $_action_depart['options']['scenario_id']);
+                $_tmp_scenario = scenario::byID($_action_depart['options']['scenario_id']);
+                log::add('presence', 'debug', 'Exécution du scénario ' . $_tmp_scenario->getName());
+//                log::add('presence', 'debug', 'déclenchement scenario : ' . $_action_depart['options']['scenario_id']);
                 $allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $_action_depart['options']['scenario_id'] . '::exec_depart', false, true);
             } else {
                 $cmd = cmd::byId(str_replace('#', '', $_action_depart['cmd']));
-                log::add('presence', 'debug', 'déclenchement commande : ' . $cmd->getId());
+                log::add('presence', 'debug', 'déclenchement commande : ' . $cmd->getId().' '.$cmd->getName());
                 $allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $cmd->getId() . '::exec_depart', false, true);
             }
             log::add('presence', 'debug', 'Allready : ' . $allready_exec->getValue(0));
@@ -827,7 +829,9 @@ class presence extends eqLogic {
                     if ($interval > intval($_action_depart['waitDelay'] * 60)) {
                         log::add('presence', 'debug', 'On a atteint l\'heure de retour');
                         if ($_action_depart['cmd'] == 'scenario') {
-                            log::add('presence', 'info', 'Exécution du scénario ' . $_action_depart['options']['scenario_id']);
+                            $_tmp_scenario = scenario::byID($_action_depart['options']['scenario_id']);
+                            log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
+//                            log::add('presence', 'info', 'Exécution du scénario ' . $_action_depart['options']['scenario_id']);
                         } else {
                             log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getHumanName());
                         }
@@ -865,7 +869,9 @@ class presence extends eqLogic {
         log::add('presence', 'debug', 'Date programmée : ' . $cmd_retour->getValue());
         foreach ($action_arrivee as $_action_arrivee) {
             if ($_action_arrivee['cmd'] == 'scenario') {
-                log::add('presence', 'debug', 'Scenario : ' . $_action_arrivee['options']['scenario_id']);
+                $_tmp_scenario = scenario::byID($_action_arrivee['options']['scenario_id']);
+                log::add('presence', 'info', 'Scénario trouvé : ' . $_tmp_scenario->getName());
+//                log::add('presence', 'debug', 'Scenario : ' . $_action_arrivee['options']['scenario_id']);
                 $allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $_action_arrivee['options']['scenario_id'] . '::exec_arrivee', false, true);
             } else {
                 $cmd = cmd::byId(str_replace('#', '', $_action_arrivee['cmd']));
@@ -887,7 +893,9 @@ class presence extends eqLogic {
                     if ($interval > intval('-' . $_action_arrivee['waitDelay'] * 60)) {
                         log::add('presence', 'debug', 'Délai OK');
                         if ($_action_arrivee['cmd'] == 'scenario') {
-                            log::add('presence', 'info', 'Exécution du scénario ' . $_action_arrivee['options']['scenario_id']);
+                            $_tmp_scenario = scenario::byID($_action_arrivee['options']['scenario_id']);
+                            log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
+//                            log::add('presence', 'info', 'Exécution du scénario ' . $_action_arrivee['options']['scenario_id']);
                         } else {
                             log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getHumanName());
                         }
@@ -1009,9 +1017,13 @@ class presence extends eqLogic {
                     try {
                         log::add('presence', 'debug', 'Délai OK');
                         if ($_action_arrivee['cmd'] == 'scenario') {
-                            log::add('presence', 'info', 'Exécution du scénario ' . $_action_arrivee['options']['scenario_id']);
+                            $_tmp_scenario = scenario::byID($_action_arrivee['options']['scenario_id']);
+                            log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
+//                            log::add('presence', 'info', 'Exécution du scénario ' . $_action_arrivee['options']['scenario_id']);
                         } else {
-                            log::add('presence', 'info', 'Exécution de la commande ' . $_action_arrivee['cmd']);
+                            $cmd = cmd::byId(str_replace('#', '', $_action_arrivee['cmd']));
+                            log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getName());  
+//                            log::add('presence', 'info', 'Exécution de la commande ' . $_action_arrivee['cmd']);
                         }
                         try {
                             $options = array();
@@ -1060,10 +1072,13 @@ class presence extends eqLogic {
             foreach ($action_depart as $_action) {
                 try {
                     if ($_action['cmd'] == 'scenario') {
-                        log::add('presence', 'info', 'Exécution du scénario ' . $_action['options']['scenario_id']);
-                    } else {
-                        //$cmd = cmd::byId(str_replace('#', '', $_action['cmd']));
-                        log::add('presence', 'info', 'Exécution de la commande ' . str_replace('#', '', $_action['cmd']));
+                             $_tmp_scenario = scenario::byID($_action['options']['scenario_id']);
+                            log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
+//                            log::add('presence', 'info', 'Exécution du scénario ' . $_action['options']['scenario_id']);
+                   } else {
+                            $cmd = cmd::byId(str_replace('#', '', $_action['cmd']));
+                            log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getName());  
+//                        log::add('presence', 'info', 'Exécution de la commande ' . str_replace('#', '', $_action['cmd']));
                     }
                     try {
                         $options = array();
@@ -1087,10 +1102,13 @@ class presence extends eqLogic {
                     foreach ($value['action'] as $_action) {
                         try {
                             if ($_action['cmd'] == 'scenario') {
-                                log::add('presence', 'info', 'Exécution du scénario ' . $_action['options']['scenario_id']);
-                            } else {
-                                //$cmd = cmd::byId(str_replace('#', '', $_action['cmd']));
-                                log::add('presence', 'info', 'Exécution de la commande ' . str_replace('#', '', $_action['cmd']));
+                             $_tmp_scenario = scenario::byID($_action['options']['scenario_id']);
+                            log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
+//                            log::add('presence', 'info', 'Exécution du scénario ' . $_action_depart['options']['scenario_id']);
+                           } else {
+                            $cmd = cmd::byId(str_replace('#', '', $_action['cmd']));
+                            log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getName());  
+//                                log::add('presence', 'info', 'Exécution de la commande ' . str_replace('#', '', $_action['cmd']));
                             }
                             try {
                                 $options = array();
