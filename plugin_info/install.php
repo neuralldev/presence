@@ -23,13 +23,13 @@ function presence_update() {
 	log::add('presence','info','*****************************************************');
 	log::add('presence','info','*********** Mise à jour du plugin Presence **********');
 	log::add('presence','info','*****************************************************');
-	log::add('presence','info','*			Core version    : 2.800					*');
-	log::add('presence','info','*			Desktop version : 1.100					*');
+	log::add('presence','info','*			Core version    : 3.000					*');
+	log::add('presence','info','*			Desktop version : 3.000					*');
 	log::add('presence','info','*			Mobile version  : 1.000					*');
 	log::add('presence','info','*****************************************************');
 	
-	config::save('presence_core_version','2.800','presence');
-	config::save('presence_desktop_version','1.100','presence');
+	config::save('presence_core_version','3.000','presence');
+	config::save('presence_desktop_version','3.000','presence');
 	config::save('presence_mobile_version','1.000','presence');
 	// log::add('presence','info','Maj du plugin');
     $cron = cron::byClassAndFunction('presence', 'Update_cron');

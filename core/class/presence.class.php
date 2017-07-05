@@ -48,6 +48,7 @@ class presence extends eqLogic {
 	public function Update_cron(){
 		log::add('presence', 'info', 'Update_cron');
 		foreach (eqLogic::byType('presence') as $eqLogic) {
+        		log::add('presence', 'debug', 'Update_cron :  check state of object');
 			$eqLogic->check_state(0,0);
         }
 	}
@@ -497,6 +498,12 @@ class presence extends eqLogic {
         
     }
 	
+    // évalue la fonction de comparaison et l'opération correspondante
+    // $_operande contient la fonction de comparaison > < == != ~
+    // $_object_value la valeur de l'objet à comparer
+    // $_prog_value la valeur ciblée
+    // la fonction effectue donc object_value operande prog_value et revoie TRUE ou FALSE
+    
 	public function check_compare($_object_value, $_operande, $_prog_value){
 		log::add('presence', 'debug', '    --> ' . $_object_value . $_operande . $_prog_value);
 		switch ($_operande){
@@ -533,16 +540,12 @@ class presence extends eqLogic {
 		
 		foreach ($this->getConfiguration('modes') as $key => $value) {
 			if ($value['name'] == $_mode_name) {
-				log::add('presence','debug','-----------------------------');
-				log::add('presence','debug','Conditions ' . $value['name'] );
-				log::add('presence','debug','-----------------------------');
-				foreach ($value["condition"] as $condition) {
-					
-					
+				log::add('presence','debug','verification_triggers : Mode=' . $value['name'] );
+				foreach ($value["condition"] as $condition) {					
 					if(str_replace('#', '', $condition['cmd']) == strval($_trigger_id)){
 						log::add('presence','debug','declenchement trigger : ' . $_trigger_id);
 						if($condition['and'] == '1'){
-							log::add('presence','debug','Type ET');
+							log::add('presence','debug','Traitement des conditions de type  ET');
 							$cache = cache::byKey('presence::' . $this->getId() . '::' . $_trigger_id, false, true);
 							$datetime1 = date_create($cache->getDatetime());
 							$datetime1 = $datetime1->getTimestamp();
@@ -550,14 +553,14 @@ class presence extends eqLogic {
 							$interval = $datetime2 - $datetime1;
 
 							if($this->check_compare($_value, $condition['operande'], $condition['comp_value'])){
-								log::add('presence','debug','    Valeur de déclenchement');
-								log::add('presence','debug','    Interval (s): ' . intval($interval));
+								log::add('presence','debug','    condition ET remplie' );
+								log::add('presence','debug','    déclenchement condition ET dans (s): ' . intval($interval));
 								if($interval >= intval($condition['waitDelay']*60)){
 									log::add('presence','debug','    Interval OK');
 									$traitement_temporaire_et[str_replace('#', '', $condition['cmd'])] = 1;
 								}
 								else{
-									log::add('presence','debug','    Interval NOK');
+									log::add('presence','debug','    Interval KO');
 									$traitement_temporaire_et[str_replace('#', '', $condition['cmd'])] = 0;
 									$calcul_next_update[str_replace('#', '', $condition['cmd'])] = intval($condition['waitDelay']*60) - $interval;
 								}
@@ -568,7 +571,7 @@ class presence extends eqLogic {
 							}	
 						}
 						else if($condition['and'] == '0'){
-							log::add('presence','debug','Type OU');
+							log::add('presence','debug','Traitement des conditions de type  OU');
 							$cache = cache::byKey('presence::' . $this->getId() . '::' . $_trigger_id, false, true);
 							$datetime1 = date_create($cache->getDatetime());
 							$datetime1 = $datetime1->getTimestamp();
@@ -576,26 +579,26 @@ class presence extends eqLogic {
 							$interval = $datetime2 - $datetime1;
 					
 							if($this->check_compare($_value, $condition['operande'], $condition['comp_value'])){
-								log::add('presence','debug','    Valeur de déclenchement');
-								log::add('presence','debug','    Interval (s): ' . intval($interval));
+								log::add('presence','debug','    condition OU remplie' );
+								log::add('presence','debug','    déclenchement condition OU dans (s): ' . intval($interval));
 								if($interval >= intval($condition['waitDelay']*60)){
 									log::add('presence','debug','    Interval OK');
 									presence::$_last_declencheur = $_trigger_id;
 									$traitement_temporaire_ou[str_replace('#', '', $condition['cmd'])] = 1;
 								}
 								else{
-									log::add('presence','debug','    Interval NOK');
+									log::add('presence','debug','    Interval KO');
 									$traitement_temporaire_ou[str_replace('#', '', $condition['cmd'])] = 0;
 									$calcul_next_update[str_replace('#', '', $condition['cmd'])] = intval($condition['waitDelay']*60) - $interval ;
 								}
 							}
 							else{
 								$traitement_temporaire_ou[str_replace('#', '', $condition['cmd'])] = 0;
-								log::add('presence','debug','    Valeur NOK');
+								log::add('presence','debug','    Valeur KO');
 							}
 						}
 						else{
-							log::add('presence','debug','Type Sans condition');
+							log::add('presence','debug','trigger sans condition');
 							$cache = cache::byKey('presence::' . $this->getId() . '::' . $_trigger_id, false, true);
 							$datetime1 = date_create($cache->getDatetime());
 							$datetime1 = $datetime1->getTimestamp();
@@ -603,8 +606,8 @@ class presence extends eqLogic {
 							$interval = $datetime2 - $datetime1;
 					
 							if($this->check_compare($_value, $condition['operande'], $condition['comp_value'])){
-								log::add('presence','debug','    Valeur de déclenchement');
-								log::add('presence','debug','    Interval (s): ' . intval($interval));
+								log::add('presence','debug','    sans condition' );
+								log::add('presence','debug','    déclenchement inconditionnel dans (s): ' . intval($interval));
 								if($interval >= intval($condition['waitDelay']*60)){
 									log::add('presence','debug','    Interval OK  ==> Fin de vérification, passage au mode suivant');
 									presence::$_last_declencheur = $_trigger_id;
@@ -612,19 +615,19 @@ class presence extends eqLogic {
 									return $cond_ok;
 								}
 								else{
-									log::add('presence','debug','    Interval NOK');
+									log::add('presence','debug','    Interval KO');
 									$calcul_next_update[str_replace('#', '', $condition['cmd'])] = intval($condition['waitDelay']*60) - $interval ;
 								}
 							}
 							else{
-								log::add('presence','debug','    Valeur NOK');
+								log::add('presence','debug','    Valeur KO');
 							}
 						}
 					}
 					else{
 						log::add('presence','debug','Verification des autres déclencheurs : ' . str_replace('#', '', $condition['cmd']));
 						if($condition['and'] == '1'){
-							log::add('presence','debug','Type ET');
+							log::add('presence','debug','condition de type ET');
 							if($condition['cmd'] == "#time#"){
 								$_tmp_value = date("Hi");
 							}
@@ -634,7 +637,7 @@ class presence extends eqLogic {
 								$datetime1 = $datetime1->getTimestamp();
 								$datetime2 = time();
 								$interval = $datetime2 - $datetime1;
-								log::add('presence','debug','    Interval (s): ' . intval($interval));					
+								log::add('presence','debug','    condtion ET à déclencher dans (s): ' . intval($interval));					
 								$tmp_cmd = cmd::byId(str_replace('#', '', $condition['cmd']));
 								$_tmp_value = $tmp_cmd->execCmd();
 							}
@@ -646,7 +649,7 @@ class presence extends eqLogic {
 									$traitement_temporaire_et[str_replace('#', '', $condition['cmd']) . '1'] = 1;
 								}
 								else{
-									log::add('presence','debug','    Interval NOK');
+									log::add('presence','debug','    Interval KO');
 									$traitement_temporaire_et[str_replace('#', '', $condition['cmd']) . '0'] = 0;
 									$calcul_next_update[str_replace('#', '', $condition['cmd'])] = intval($condition['waitDelay']*60) - $interval;
 								}
@@ -657,7 +660,7 @@ class presence extends eqLogic {
 							}
 						}
 						else if($condition['and'] == '0'){
-							log::add('presence','debug','Type OU');
+							log::add('presence','debug','condition de type OU');
 							if($condition['cmd'] == "#time#"){
 								$_tmp_value = date("Hi");
 							}
@@ -673,14 +676,14 @@ class presence extends eqLogic {
 							}
 							if($this->check_compare($_tmp_value, $condition['operande'], $condition['comp_value'])){
 								log::add('presence','debug','    Valeur de déclenchement');
-								log::add('presence','debug','    Interval (s): ' . intval($interval));
+								log::add('presence','debug','    condition OU à déclencher dans (s): ' . intval($interval));
 								if($interval >= intval($condition['waitDelay']*60)){
 									log::add('presence','debug','    Interval OK');
 									presence::$_last_declencheur = str_replace('#', '', $condition['cmd']);
 									$traitement_temporaire_ou[str_replace('#', '', $condition['cmd'])] = 1;
 								}
 								else{
-									log::add('presence','debug','    Interval NOK');
+									log::add('presence','debug','    Interval KO');
 									$traitement_temporaire_ou[str_replace('#', '', $condition['cmd'])] = 0;
 									$calcul_next_update[str_replace('#', '', $condition['cmd'])] = intval($condition['waitDelay']*60) - $interval;
 								}
@@ -691,8 +694,8 @@ class presence extends eqLogic {
 							}
 						}
 						else{
-							log::add('presence','debug','Type Sans condition');
-							log::add('presence','debug','TEST1 : '. $condition['cmd']);
+							log::add('presence','debug','déclenchement inconditionnel');
+							log::add('presence','debug','condition = '. $condition['cmd']);
 							if($condition['cmd'] == "#time#"){
 								$_tmp_value = date("Hi");
 							}
@@ -708,7 +711,7 @@ class presence extends eqLogic {
 							}
 							if($this->check_compare($_tmp_value, $condition['operande'], $condition['comp_value'])){
 								log::add('presence','debug','    Valeur de déclenchement');
-								log::add('presence','debug','    Interval (s): ' . intval($interval));
+								log::add('presence','debug','    déclenchement inconditionnel dans (s): ' . intval($interval));
 								if($interval >= intval($condition['waitDelay']*60)){
 									log::add('presence','debug','    Interval OK  ==> Fin de vérification, passage au mode suivant');
 									presence::$_last_declencheur = str_replace('#', '', $condition['cmd']);
@@ -716,7 +719,7 @@ class presence extends eqLogic {
 									return $cond_ok;	
 								}
 								else{
-									log::add('presence','debug','    Interval NOK');
+									log::add('presence','debug','    Interval KO');
 									$calcul_next_update[str_replace('#', '', $condition['cmd'])] = intval($condition['waitDelay']*60) - $interval;
 								}
 							}
@@ -768,16 +771,18 @@ class presence extends eqLogic {
 		}
 		
 		endofverification:
-		log::add('presence','debug','Calcul pour prochain déclenchement : ');
-		
+		log::add('presence','debug','Calcul pour prochain déclenchement, par défaut 300 secondes');
+		// par défaut 300 secondes
 		presence::$_time_tmp = 300;
+                // si une des mises à jours nécessite un check avant on réduit le temps
 		foreach ($calcul_next_update as $k => $v) {
-		log::add('presence','debug','délai => ' . $v);
+		log::add('presence','debug','délai trouvé => ' . $v);
 			if($v <= presence::$_time_tmp){
+                		log::add('presence','debug','réduction du délai à ' . $v);
 				presence::$_time_tmp = $v;
 			}
 		}
-		log::add('presence','debug','==> Dans ' . presence::$_time_tmp . ' secondes');
+		log::add('presence','debug','Prochain déclenchement dans ' . presence::$_time_tmp . ' secondes');
 
 		return $cond_ok;
 	}
@@ -786,12 +791,11 @@ class presence extends eqLogic {
 		$calcul_next_update = array();
 		$action_depart = $this->getConfiguration('action_depart');
 		$action_arrivee = $this->getConfiguration('action_arrivee');
-		log::add('presence','debug','-----------------');
-		log::add('presence','debug','Traitement Vacances');
-		log::add('presence','debug','-----------------');
+		log::add('presence','debug','Traitement du mode spécifique Vacances');
 		
 		$_locker_date_retour = cache::byKey('presence::' . $this->getId() . '::locker_date_retour');
 		if($_locker_date_retour->getValue() > 0){
+        		log::add('presence','debug','Date de retour présente à prendre en compte');
 			$cmd_retour = $this->getCmd('info', 'Retour');
 			$_datetime1 = DateTime::createFromFormat('d-m-Y H:i',$cmd_retour->getValue());
 			$_datetime1 = $_datetime1->format('U');
@@ -799,9 +803,11 @@ class presence extends eqLogic {
 			$_interval = $_datetime2 - $_datetime1;		
 			presence::$_time_tmp = 60;
 			if(intval($_interval) < 0){	
+                		log::add('presence','debug','Déclenchement retour atteint');
 				cache::set('presence::' . $this->getId() . '::locker_date_retour', 0 , 0);
 			}
 			else{
+                		log::add('presence','debug','Déclenchement retour non atteint');
 				goto calculdeclenchement;
 			}		
 		}
@@ -824,12 +830,12 @@ class presence extends eqLogic {
 		
 		foreach ($action_depart as $_action_depart) {
 			if($_action_depart['cmd'] == 'scenario'){
-				log::add('presence','debug','Scenario : ' . $_action_depart['options']['scenario_id']);
+				log::add('presence','debug','déclenchement scenario : ' . $_action_depart['options']['scenario_id']);
 				$allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $_action_depart['options']['scenario_id'] . '::exec_depart', false, true);
 			}
 			else{
 				$cmd = cmd::byId(str_replace('#', '', $_action_depart['cmd']));
-				log::add('presence','debug','Cmd : ' . $cmd->getId());
+				log::add('presence','debug','déclenchement commande : ' . $cmd->getId());
 				$allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $cmd->getId() . '::exec_depart', false, true);
 			}
 			log::add('presence','debug','Allready : ' . $allready_exec->getValue(0));
@@ -839,9 +845,6 @@ class presence extends eqLogic {
 			if(intval($allready_exec->getValue(0)) != 1){
 				//if (is_object($cmd)) {
 					try {
-						//$cache = cache::byKey('cmd' . $cmd_mode->getId(), false, true);
-						//$datetime1 = date_create($_cache->getValue());
-						//$datetime1 = $datetime1->getTimestamp();
 						$datetime1 = $_cache->getValue();
 						$datetime2 = time();
 						$interval = $datetime2 - $datetime1;
@@ -881,6 +884,7 @@ class presence extends eqLogic {
 						}
 						
 					} catch (Exception $e) {
+                
 						log::add('presence', 'error', 'Erreur lors de l\'exécution : ' . str_replace('#', '', $_action_depart['cmd']) . ' Info : ' . $e->getMessage());
 					}
 				//}
