@@ -529,6 +529,44 @@ class presence extends eqLogic {
         return false;
     }
 
+    // détermine si c'est un scénario ou une action
+    // si $_skip est FAUX, alors évalue si l'action est déjà exécutée en cache
+    // $token contient la direction exec_depart ou exec_arrivee
+    private function defineActionAndRun($_action, $_skip, $_token, $_exec, $_setcache) {
+        $i = 0;
+
+        if ($_action['cmd'] == 'scenario') {
+            $_tmp_scenario = scenario::byID($_action['options']['scenario_id']);
+            log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
+            if ($_skip == false) {
+                $allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $_action['options']['scenario_id'] . '::' . $_token, false, true);
+                $i = intal($allready_exec->getValue(0));
+            }
+        } else {
+            $cmd = cmd::byId(str_replace('#', '', $_action['cmd']));
+            log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getName());
+            if ($_skip == false) {
+                $allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $cmd->getId() . '::' . $_token, false, true);
+                $i = intval($allready_exec->getValue(0));
+            }
+        }
+        if ($_exec) {
+            try {
+                scenarioExpression::createAndExec('action', str_replace('#', '', $_action['cmd']), $_action['options']);
+            } catch (Exception $e) {
+                log::add('presence', 'error', __('Erreur lors de l\'éxecution de ', __FILE__) . $_action['cmd'] . __('. Détails : ', __FILE__) . $e->getMessage());
+            }
+        }
+        if ($_setcache) {
+            if ($_action['cmd'] == 'scenario') {
+                cache::set('presence::' . $this->getId() . '::' . $_action['options']['scenario_id'] . '::' . $_token, 1, 0);
+            } else {
+                cache::set('presence::' . $this->getId() . '::' . str_replace('#', '', $_action['cmd']) . '::' . $_token, 1, 0);
+            }
+        }
+        return $i;
+    }
+
     public function verification_triggers($_trigger_id, $_value, $_mode_name) {
         $traitement_temporaire_et = array();
         $traitement_temporaire_ou = array();
@@ -764,12 +802,13 @@ class presence extends eqLogic {
     }
 
     public function verification_vacances() {
+        $_id = $this->getId();
         $calcul_next_update = array();
         $action_depart = $this->getConfiguration('action_depart');
         $action_arrivee = $this->getConfiguration('action_arrivee');
         log::add('presence', 'debug', 'Traitement du mode spécifique Vacances');
 
-        $_locker_date_retour = cache::byKey('presence::' . $this->getId() . '::locker_date_retour');
+        $_locker_date_retour = cache::byKey('presence::' . $_id . '::locker_date_retour');
         if ($_locker_date_retour->getValue() > 0) {
             log::add('presence', 'debug', 'Date de retour présente à prendre en compte');
             $cmd_retour = $this->getCmd('info', 'Retour');
@@ -780,46 +819,31 @@ class presence extends eqLogic {
             presence::$_time_tmp = 60;
             if (intval($_interval) < 0) {
                 log::add('presence', 'debug', 'Déclenchement retour atteint');
-                cache::set('presence::' . $this->getId() . '::locker_date_retour', 0, 0);
+                cache::set('presence::' . $_id . '::locker_date_retour', 0, 0);
             } else {
                 log::add('presence', 'debug', 'Déclenchement retour non atteint');
                 goto calculdeclenchement;
             }
         }
-        /* $cmd_mode = $this->getCmd();
-          foreach ($cmd_mode as $cmd_list) {
-          if ($cmd_list->getName() == 'Mode') {
-          $cmd_mode = $cmd_list;
-          break;
-          }
-          } */
         $cmd_mode = $this->getCmd('info', 'Mode');
-        $_cache = cache::byKey('presence::' . $this->getId() . '::vacances_datetime');
-        /* foreach ($this->getCmd() as $cmd_list) {
-          if ($cmd_list->getName() == 'Retour') {
-          $cmd_retour = $cmd_list;
-          break;
-          }
-          } */
+        $_cache = cache::byKey('presence::' . $_id . '::vacances_datetime');
         $cmd_retour = $this->getCmd('info', 'Retour');
 
         foreach ($action_depart as $_action_depart) {
-            if ($_action_depart['cmd'] == 'scenario') {
-                $_tmp_scenario = scenario::byID($_action_depart['options']['scenario_id']);
-                log::add('presence', 'debug', 'Exécution du scénario ' . $_action_depart['options']['scenario_id'].' '.$_tmp_scenario->getName());
-//                log::add('presence', 'debug', 'déclenchement scenario : ' . $_action_depart['options']['scenario_id']);
-                $allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $_action_depart['options']['scenario_id'] . '::exec_depart', false, true);
-            } else {
-                $cmd = cmd::byId(str_replace('#', '', $_action_depart['cmd']));
-                log::add('presence', 'debug', 'déclenchement commande : ' . $cmd->getId().' '.$cmd->getName());
-                $allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $cmd->getId() . '::exec_depart', false, true);
-            }
-            log::add('presence', 'debug', 'Allready : ' . $allready_exec->getValue(0));
-            /* if($allready_exec->getValue(0) == null){
-              $allready_exec = 0;
-              } */
-            if (intval($allready_exec->getValue(0)) != 1) {
-                //if (is_object($cmd)) {
+            $v = $this->defineActionAndRun($action_depart, TRUE, 'exec_depart', FALSE, FALSE);
+//            if ($_action_depart['cmd'] == 'scenario') {
+//                $_tmp_scenario = scenario::byID($_action_depart['options']['scenario_id']);
+//                log::add('presence', 'debug', 'Exécution du scénario ' . $_action_depart['options']['scenario_id'].' '.$_tmp_scenario->getName());
+////                log::add('presence', 'debug', 'déclenchement scenario : ' . $_action_depart['options']['scenario_id']);
+//                $allready_exec = cache::byKey('presence::' . $_id . '::' . $_action_depart['options']['scenario_id'] . '::exec_depart', false, true);
+//            } else {
+//                $cmd = cmd::byId(str_replace('#', '', $_action_depart['cmd']));
+//                log::add('presence', 'debug', 'déclenchement commande : ' . $cmd->getId().' '.$cmd->getName());
+//                $allready_exec = cache::byKey('presence::' . $_id . '::' . $cmd->getId() . '::exec_depart', false, true);
+//            }
+//            log::add('presence', 'debug', 'Allready : ' . $allready_exec->getValue(0));
+            log::add('presence', 'debug', 'Allready vacances : ' . $v);
+            if ($v != 1) {
                 try {
                     $datetime1 = $_cache->getValue();
                     $datetime2 = time();
@@ -828,18 +852,19 @@ class presence extends eqLogic {
                     log::add('presence', 'debug', 'Interval (s): ' . intval($interval));
                     if ($interval > intval($_action_depart['waitDelay'] * 60)) {
                         log::add('presence', 'debug', 'On a atteint l\'heure de retour');
-                        if ($_action_depart['cmd'] == 'scenario') {
-                            $_tmp_scenario = scenario::byID($_action_depart['options']['scenario_id']);
-                            log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
-//                            log::add('presence', 'info', 'Exécution du scénario ' . $_action_depart['options']['scenario_id']);
-                        } else {
-                            log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getHumanName());
-                        }
-                        try {
-                            scenarioExpression::createAndExec('action', str_replace('#', '', $_action_depart['cmd']), $_action_depart['options']);
-                        } catch (Exception $e) {
-                            log::add('presence', 'error', __('Erreur lors de l\'éxecution de ', __FILE__) . $_action_depart['cmd'] . __('. Détails : ', __FILE__) . $e->getMessage());
-                        }
+                        $v2 = $this->defineActionAndRun($action_depart, FALSE, 'exec_depart', TRUE, TRUE);
+//                        if ($_action_depart['cmd'] == 'scenario') {
+//                            $_tmp_scenario = scenario::byID($_action_depart['options']['scenario_id']);
+//                            log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
+////                            log::add('presence', 'info', 'Exécution du scénario ' . $_action_depart['options']['scenario_id']);
+//                        } else {
+//                            log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getHumanName());
+//                        }
+//                        try {
+//                            scenarioExpression::createAndExec('action', str_replace('#', '', $_action_depart['cmd']), $_action_depart['options']);
+//                        } catch (Exception $e) {
+//                            log::add('presence', 'error', __('Erreur lors de l\'éxecution de ', __FILE__) . $_action_depart['cmd'] . __('. Détails : ', __FILE__) . $e->getMessage());
+//                        }
 
                         /* log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getHumanName());
                           $options = array();
@@ -848,11 +873,11 @@ class presence extends eqLogic {
                           }
                           $cmd->execCmd($options);
                          */
-                        if ($_action_depart['cmd'] == 'scenario') {
-                            cache::set('presence::' . $this->getId() . '::' . $_action_depart['options']['scenario_id'] . '::exec_depart', 1, 0);
-                        } else {
-                            cache::set('presence::' . $this->getId() . '::' . str_replace('#', '', $_action_depart['cmd']) . '::exec_depart', 1, 0);
-                        }
+//                        if ($_action_depart['cmd'] == 'scenario') {
+//                            cache::set('presence::' . $_id . '::' . $_action_depart['options']['scenario_id'] . '::exec_depart', 1, 0);
+//                        } else {
+//                            cache::set('presence::' . $_id . '::' . str_replace('#', '', $_action_depart['cmd']) . '::exec_depart', 1, 0);
+//                        }
                     } else {
                         log::add('presence', 'debug', 'Délai NOK');
                         $calcul_next_update[str_replace('#', '', $_action_depart['cmd'])] = intval($_action_depart['waitDelay'] * 60) - $interval;
@@ -872,11 +897,11 @@ class presence extends eqLogic {
                 $_tmp_scenario = scenario::byID($_action_arrivee['options']['scenario_id']);
                 log::add('presence', 'info', 'Scénario trouvé : ' . $_tmp_scenario->getName());
 //                log::add('presence', 'debug', 'Scenario : ' . $_action_arrivee['options']['scenario_id']);
-                $allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $_action_arrivee['options']['scenario_id'] . '::exec_arrivee', false, true);
+                $allready_exec = cache::byKey('presence::' . $_id . '::' . $_action_arrivee['options']['scenario_id'] . '::exec_arrivee', false, true);
             } else {
                 $cmd = cmd::byId(str_replace('#', '', $_action_arrivee['cmd']));
-                log::add('presence', 'debug', 'Cmd : ' . $cmd->getId());
-                $allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $cmd->getId() . '::exec_arrivee', false, true);
+                log::add('presence', 'debug', 'Cmd : ' . $cmd->hgetId());
+                $allready_exec = cache::byKey('presence::' . $_id . '::' . $cmd->getId() . '::exec_arrivee', false, true);
             }
 
             if (intval($allready_exec->getValue(0)) != 1) {
@@ -886,28 +911,29 @@ class presence extends eqLogic {
                     $datetime1 = $datetime1->format('U');
                     $datetime2 = time();
                     $interval = $datetime2 - $datetime1;
-                    log::add('presence', 'debug', 'datetime1 (s): ' . $datetime1. ' datetime2 (s): ' . $datetime2. ' Interval (s): ' . intval($interval).' WaitTime (s): ' . intval('-' . $_action_arrivee['waitDelay'] * 60));
+                    log::add('presence', 'debug', 'datetime1 (s): ' . $datetime1 . ' datetime2 (s): ' . $datetime2 . ' Interval (s): ' . intval($interval) . ' WaitTime (s): ' . intval('-' . $_action_arrivee['waitDelay'] * 60));
                     if ($interval > intval('-' . $_action_arrivee['waitDelay'] * 60)) {
                         log::add('presence', 'debug', 'Délai de déclenchement OK');
-                        if ($_action_arrivee['cmd'] == 'scenario') {
-                            $_tmp_scenario = scenario::byID($_action_arrivee['options']['scenario_id']);
-                            log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
-//                            log::add('presence', 'info', 'Exécution du scénario ' . $_action_arrivee['options']['scenario_id']);
-                        } else {
-                            log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getHumanName());
-                        }
-                        try {
-                            scenarioExpression::createAndExec('action', str_replace('#', '', $_action_arrivee['cmd']), $_action_arrivee['options']);
-                        } catch (Exception $e) {
-                            log::add('presence', 'error', __('Erreur lors de l\'éxecution de ', __FILE__) . $_action_arrivee['cmd'] . __('. Détails : ', __FILE__) . $e->getMessage());
-                        }
+                        $v = $this->defineActionAndRun($action_arrivee, FALSE, 'exec_arrivee', TRUE, TRUE);
+//                        if ($_action_arrivee['cmd'] == 'scenario') {
+//                            $_tmp_scenario = scenario::byID($_action_arrivee['options']['scenario_id']);
+//                            log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
+////                            log::add('presence', 'info', 'Exécution du scénario ' . $_action_arrivee['options']['scenario_id']);
+//                        } else {
+//                            log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getHumanName());
+//                        }
+//                        try {
+//                            scenarioExpression::createAndExec('action', str_replace('#', '', $_action_arrivee['cmd']), $_action_arrivee['options']);
+//                        } catch (Exception $e) {
+//                            log::add('presence', 'error', __('Erreur lors de l\'éxecution de ', __FILE__) . $_action_arrivee['cmd'] . __('. Détails : ', __FILE__) . $e->getMessage());
+//                        }
 
                         /* $options = array();
                           if (isset($_action_arrivee['options'])) {
                           $options = $_action_arrivee['options'];
                           }
                           $cmd->execCmd($options); */
-                        cache::set('presence::' . $this->getId() . '::' . str_replace('#', '', $_action_arrivee['cmd']) . '::exec_arrivee', 1, 0);
+//                        cache::set('presence::' . $_id . '::' . str_replace('#', '', $_action_arrivee['cmd']) . '::exec_arrivee', 1, 0);
                     } else {
                         log::add('presence', 'debug', 'Délai non atteint, on patiente avant lancement');
                         $calcul_next_update[str_replace('#', '', $_action_arrivee['cmd'])] = intval($_action_arrivee['waitDelay'] * 60) - $interval;
@@ -935,7 +961,7 @@ class presence extends eqLogic {
         $_datetime2 = time();
         $_interval = $_datetime2 - $_datetime1;
         if (intval($interval) > 0) {
-            cache::set('presence::' . $this->getId() . '::locker_vacances', 0, 0);
+            cache::set('presence::' . $_id . '::locker_vacances', 0, 0);
             log::add('presence', 'info', ' ==> Mode vacances terminé');
             $cmd_retour->setIsVisible(0);
             $cmd_retour->save();
@@ -948,53 +974,57 @@ class presence extends eqLogic {
 
         log::add('presence', 'info', 'RAZ des déclencheurs vacances');
 
+        $_id = $this->getId();
         $action_depart = $this->getConfiguration('action_depart');
         $action_arrivee = $this->getConfiguration('action_arrivee');
 
         foreach ($action_depart as $_action_depart) {
             if ($_action_depart['cmd'] == 'scenario') {
-                cache::set('presence::' . $this->getId() . '::' . $_action_depart['options']['scenario_id'] . '::exec_depart', 0, 0);
+                cache::set('presence::' . $_id . '::' . $_action_depart['options']['scenario_id'] . '::exec_depart', 0, 0);
             } else {
                 $cmd = cmd::byId(str_replace('#', '', $_action_depart['cmd']));
-                cache::set('presence::' . $this->getId() . '::' . $cmd->getId() . '::exec_depart', 0, 0);
+                cache::set('presence::' . $_id . '::' . $cmd->getId() . '::exec_depart', 0, 0);
             }
         }
 
         foreach ($action_arrivee as $_action_arrivee) {
             if ($_action_arrivee['cmd'] == 'scenario') {
-                cache::set('presence::' . $this->getId() . '::' . $_action_arrivee['options']['scenario_id'] . '::exec_arrivee', 0, 0);
+                cache::set('presence::' . $_id . '::' . $_action_arrivee['options']['scenario_id'] . '::exec_arrivee', 0, 0);
             } else {
                 $cmd = cmd::byId(str_replace('#', '', $_action_arrivee['cmd']));
-                cache::set('presence::' . $this->getId() . '::' . $cmd->getId() . '::exec_arrivee', 0, 0);
+                cache::set('presence::' . $_id . '::' . $cmd->getId() . '::exec_arrivee', 0, 0);
             }
         }
 
         //log::add('presence', 'debug', 'FIN du RAZ');
         $cmd_retour = $this->getCmd('info', 'Retour');
         //log::add('presence', 'debug', $cmd_retour->getValue());
+        // date/heure de retour
         $_datetime1 = DateTime::createFromFormat('d-m-Y H:i', $cmd_retour->getValue());
         $_datetime1 = $_datetime1->format('U');
+        // date/heure courante
         $_datetime2 = time();
         //log::add('presence','debug','datetime1 (s): ' . $_datetime1);
         //log::add('presence','debug','datetime2 (s): ' . $_datetime2);
+        // différence en seconde entre les deux dates
         $_interval = $_datetime2 - $_datetime1;
         log::add('presence', 'debug', 'Interval (s): ' . intval($_interval));
         if (intval($_interval) > 0) {
             message::add('Présence', 'Veuillez renseigner une date de retour ultérieure.', null, null);
-            cache::set('presence::' . $this->getId() . '::locker_date_retour', 1, 0);
-            cache::set('presence::' . $this->getId() . '::locker_vacances', 1, 0);
+            cache::set('presence::' . $_id . '::locker_date_retour', 1, 0);
+            cache::set('presence::' . $_id . '::locker_vacances', 1, 0);
         } else {
-            cache::set('presence::' . $this->getId() . '::locker_date_retour', 0, 0);
-            cache::set('presence::' . $this->getId() . '::locker_vacances', 1, 0);
+            cache::set('presence::' . $_id . '::locker_date_retour', 0, 0);
+            cache::set('presence::' . $_id . '::locker_vacances', 1, 0);
         }
         //log::add('presence', 'debug', 'FIN du retour');
-        cache::set('presence::' . $this->getId() . '::vacances_datetime', time(), 0);
+        cache::set('presence::' . $_id . '::vacances_datetime', time(), 0);
     }
 
     public function lancement_actions($mode, $old_mode) {
         log::add('presence', 'debug', 'Fonction lancement : ' . $mode . '/' . $old_mode);
         $play_retour_actions = $this->getConfiguration('execute_return_holliday');
-
+        $_id = $this->getId;
 
         log::add('presence', 'info', 'Déclenchement des actions de sortie du mode ' . $old_mode);
         if ($old_mode == "Vacances" && $play_retour_actions == "1") {
@@ -1002,12 +1032,13 @@ class presence extends eqLogic {
             log::add('presence', 'debug', '--- Retour ---');
             foreach ($action_arrivee as $_action_arrivee) {
                 if ($_action_arrivee['cmd'] == 'scenario') {
-                    log::add('presence', 'debug', 'Scenario : ' . $_action_arrivee['options']['scenario_id']);
-                    $allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $_action_arrivee['options']['scenario_id'] . '::exec_arrivee', false, true);
+                    $_tmp_scenario = scenario::byID($_action_arrivee['options']['scenario_id']);
+                    log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
+                    $allready_exec = cache::byKey('presence::' . $_id . '::' . $_action_arrivee['options']['scenario_id'] . '::exec_arrivee', false, true);
                 } else {
                     $cmd = cmd::byId(str_replace('#', '', $_action_arrivee['cmd']));
                     log::add('presence', 'debug', 'Cmd : ' . $cmd->getId());
-                    $allready_exec = cache::byKey('presence::' . $this->getId() . '::' . $cmd->getId() . '::exec_arrivee', false, true);
+                    $allready_exec = cache::byKey('presence::' . $_id . '::' . $cmd->getId() . '::exec_arrivee', false, true);
                 }
 
                 if (intval($allready_exec->getValue(0)) != 1) {
@@ -1016,11 +1047,9 @@ class presence extends eqLogic {
                         if ($_action_arrivee['cmd'] == 'scenario') {
                             $_tmp_scenario = scenario::byID($_action_arrivee['options']['scenario_id']);
                             log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
-//                            log::add('presence', 'info', 'Exécution du scénario ' . $_action_arrivee['options']['scenario_id']);
                         } else {
                             $cmd = cmd::byId(str_replace('#', '', $_action_arrivee['cmd']));
-                            log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getName());  
-//                            log::add('presence', 'info', 'Exécution de la commande ' . $_action_arrivee['cmd']);
+                            log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getName());
                         }
                         try {
                             $options = array();
@@ -1031,13 +1060,7 @@ class presence extends eqLogic {
                         } catch (Exception $e) {
                             log::add('presence', 'error', __('Erreur lors de l\'éxecution de ', __FILE__) . $_action_arrivee['cmd'] . __('. Détails : ', __FILE__) . $e->getMessage());
                         }
-
-                        /* $options = array();
-                          if (isset($_action_arrivee['options'])) {
-                          $options = $_action_arrivee['options'];
-                          }
-                          $cmd->execCmd($options); */
-                        cache::set('presence::' . $this->getId() . '::' . str_replace('#', '', $_action_arrivee['cmd']) . '::exec_arrivee', 1, 0);
+                        cache::set('presence::' . $_id . '::' . str_replace('#', '', $_action_arrivee['cmd']) . '::exec_arrivee', 1, 0);
                     } catch (Exception $e) {
                         log::add('presence', 'error', 'Erreur');
                     }
@@ -1060,7 +1083,6 @@ class presence extends eqLogic {
                         }
                     }
                 }
-                //$exit_action = $this->getConfiguration('modes')[$mode]['action_exit'];;//$this->getConfiguration('action_exit_' . $old_mode);
             }
         }
         log::add('presence', 'info', 'Déclenchement des actions d\'entrée en mode ' . $mode);
@@ -1069,13 +1091,11 @@ class presence extends eqLogic {
             foreach ($action_depart as $_action) {
                 try {
                     if ($_action['cmd'] == 'scenario') {
-                             $_tmp_scenario = scenario::byID($_action['options']['scenario_id']);
-                            log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
-//                            log::add('presence', 'info', 'Exécution du scénario ' . $_action['options']['scenario_id']);
-                   } else {
-                            $cmd = cmd::byId(str_replace('#', '', $_action['cmd']));
-                            log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getName());  
-//                        log::add('presence', 'info', 'Exécution de la commande ' . str_replace('#', '', $_action['cmd']));
+                        $_tmp_scenario = scenario::byID($_action['options']['scenario_id']);
+                        log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
+                    } else {
+                        $cmd = cmd::byId(str_replace('#', '', $_action['cmd']));
+                        log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getName());
                     }
                     try {
                         $options = array();
@@ -1099,13 +1119,11 @@ class presence extends eqLogic {
                     foreach ($value['action'] as $_action) {
                         try {
                             if ($_action['cmd'] == 'scenario') {
-                             $_tmp_scenario = scenario::byID($_action['options']['scenario_id']);
-                            log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
-//                            log::add('presence', 'info', 'Exécution du scénario ' . $_action_depart['options']['scenario_id']);
-                           } else {
-                            $cmd = cmd::byId(str_replace('#', '', $_action['cmd']));
-                            log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getName());  
-//                                log::add('presence', 'info', 'Exécution de la commande ' . str_replace('#', '', $_action['cmd']));
+                                $_tmp_scenario = scenario::byID($_action['options']['scenario_id']);
+                                log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
+                            } else {
+                                $cmd = cmd::byId(str_replace('#', '', $_action['cmd']));
+                                log::add('presence', 'info', 'Exécution de la commande ' . $cmd->getName());
                             }
                             try {
                                 $options = array();
@@ -1116,9 +1134,6 @@ class presence extends eqLogic {
                             } catch (Exception $e) {
                                 log::add('presence', 'error', __('Erreur lors de l\'éxecution de ', __FILE__) . $_action['cmd'] . __('. Détails : ', __FILE__) . $e->getMessage());
                             }
-
-                            //log::add('presence', 'debug', 'Lancement de : ' . $_action['cmd'] . $_action['options']);
-                            //scenarioExpression::createAndExec('action', $_action['cmd'], $_action['options']);
                         } catch (Exception $e) {
                             log::add('presence', 'error', __('Erreur lors de l\'éxecution de ', __FILE__) . $_action['cmd'] . __('. Détails : ', __FILE__) . $e->getMessage());
                         }
@@ -1135,7 +1150,7 @@ class presence extends eqLogic {
 
             $last_declencheur = $this->getCmd(null, 'last_declencheur');
 
-            $cmd = null;
+            //cmd = null;
             $cmd = $this->getCmd('info', 'Mode');
             $mode = $cmd->getValue();
             log::add('presence', 'debug', 'Mode actuel : ' . $mode);
@@ -1151,7 +1166,6 @@ class presence extends eqLogic {
                 goto endofcommand;
             }
 
-
             $conditions_states = [];
 
             $_locker_vacances = cache::byKey('presence::' . $this->getId() . '::locker_vacances');
@@ -1161,7 +1175,6 @@ class presence extends eqLogic {
                 $this->verification_vacances();
                 goto endofcommand;
             } else {
-
                 if (is_array($this->getConfiguration('modes'))) {
                     log::add('presence', 'debug', 'Modes : ');
                     foreach ($this->getConfiguration('modes') as $key => $value) {
@@ -1181,26 +1194,26 @@ class presence extends eqLogic {
                 message::add('Présence', "Veuillez renseigner la priorité des modes", null, null);
                 goto endofcommand;
             } else {
-                log::add('presence', 'debug', 'Ordre renseigné : ' . $state_order);
+                log::add('presence', 'debug', 'Ordre utilisé : ' . $state_order);
             }
             $tableau_ordre = explode(";", $state_order);
-            $ii = 0;
-            for ($ii; $ii < count($tableau_ordre); $ii++) {
-                log::add('presence', 'debug', 'Ordre : ' . $tableau_ordre[$ii]);
-                if ($conditions_states[$tableau_ordre[$ii]] == 1) {
+            $i = 0;
+            for ($i; $i < count($tableau_ordre); $i++) {
+                log::add('presence', 'debug', 'Ordre : ' . $tableau_ordre[$i]);
+                if ($conditions_states[$tableau_ordre[$i]] == 1) {
                     log::add('presence', 'debug', 'Test condition OK ');
-                    if ($mode != $tableau_ordre[$ii]) {
-                        $cmd->setValue($tableau_ordre[$ii]);
+                    if ($mode != $tableau_ordre[$i]) {
+                        $cmd->setValue($tableau_ordre[$i]);
                         $cmd->save();
-                        $cmd->event($tableau_ordre[$ii]);
+                        $cmd->event($tableau_ordre[$i]);
                         $cmd->setCollectDate(date('Y-m-d H:i:s'));
-                        log::add('presence', 'info', 'Changement mode => ' . $tableau_ordre[$ii]);
-                        $this->lancement_actions($tableau_ordre[$ii], $mode);
+                        log::add('presence', 'info', 'Changement du mode => ' . $tableau_ordre[$i]);
+                        $this->lancement_actions($tableau_ordre[$i], $mode);
                         //goto endofcommand;
                     } else {
                         log::add('presence', 'info', 'Pas besoin de changement mode');
                     }
-                    goto endofcommand;
+                    break;
                 }
             }
 
@@ -1213,7 +1226,7 @@ class presence extends eqLogic {
             $simu_modes = $this->getConfiguration('simulation_modes');
             if ($simu_modes == '') {
                 $simu_modes = '5';
-                log::add('presence', 'debug', 'Simu auto (Seulement mode vacances)');
+                log::add('presence', 'debug', 'Simulation en mode automatique (en mode vacances)');
             } else {
                 log::add('presence', 'debug', 'Simulation activée dans les paramètres sur le mode : ' . $simu_modes);
             }
@@ -1267,61 +1280,39 @@ class presence extends eqLogic {
     }
 
     public function simu_presence() {
-
-
-
-
         $simulation = $this->getConfiguration('cond_simu');
         foreach ($simulation as $_simulation) {
             log::add('presence', 'debug', 'Objet de simulation');
             $start = explode(":", $_simulation['debut']);
             $stop = explode(":", $_simulation['fin']);
+
+            // évalue la valeur aléatoire en minutes pour différer par rapport à l'heure de base 
             $differe = rand(0, $_simulation['differe']);
 
             log::add('presence', 'debug', 'Début : ' . $start[0] . ':' . $start[1] . ' / Fin : ' . $stop[0] . ' ' . $stop[1] . ' / Différé : ' . $differe);
             $cacheKey = 'presence::' . $this->getId() . $start[0] . $start[1] . $stop[0] . $stop[1] . $_simulation['differe'] . '::simulation';
 
+            // start 0 = heure de départ
+            // start 1 = minutes de départ
+            // récupète le nombre de minutes de départ et ajoute le différé
             $start[1] = $start[1] + $differe;
             if ($start[1] > 59) {
-                $start[1] = $start[1] - 60;
-                $start[0] = $start[0] + 1;
+                $start[1] -= 60;
+                $start[0]++;
             }
             if ($start[0] > 23) {
                 $start[0] = 0;
             }
 
-
-            $differe = rand(0, $_simulation['differe']);
-            $stop[1] = $stop[1] + $differe;
+            // corrigé, le décalage doit être uniforme sur le début et fin ...
+            $stop[1] += $differe;
             if ($stop[1] > 59) {
-                $stop[1] = $stop[1] - 60;
-                $stop[0] = $stop[0] + 1;
+                $stop[1] -= 60;
+                $stop[0] += + 1;
             }
             if ($stop[0] > 23) {
                 $stop[0] = 0;
             }
-
-
-            //log::add('presence', 'debug', $stop[0] . ' ' . $stop[1]);
-            //$start_date = DateTime::createFromFormat('H:i', $_simulation['debut']);
-            //log::add('presence', 'debug', 'Simulation : '. $start_date->format('H!i'););
-
-            /* if (date('H') >= $start[0] && date('i') >= $start[1] && date('H') <= $stop[0] && date('i') <= $stop[1]) {
-              $cache = cache::byKey('presence::' . $this->getId() . '::simulation', false, true);
-              if($cache->getValue() != '1'){
-              cache::set('presence::' . $this->getId() . '::simulation',1, 1);
-              $this->lancement_actions('simulation_on','');
-              }
-              log::add('presence', 'debug', '==> en cours');
-              }
-              else{
-              $cache = cache::byKey('presence::' . $this->getId() . '::simulation', false, true);
-              if($cache->getValue() != '0'){
-              cache::set('presence::' . $this->getId() . '::simulation',0, 0);
-              $this->lancement_actions('simulation_off','');
-              }
-              log::add('presence', 'debug', '==> arreté');
-              } */
 
             if (date('H') >= $start[0] && date('i') >= $start[1] && date('H') <= $stop[0] && date('i') <= $stop[1]) {
                 $cache = cache::byKey($cacheKey, false, true);
@@ -1341,7 +1332,6 @@ class presence extends eqLogic {
                 }
                 log::add('presence', 'debug', '==> arreté');
             }
-
 
             log::add('presence', 'debug', 'Calcul pour prochain déclenchement (simu) : ');
             $datetime1 = date("Y-m-d H:i:s", mktime($start[0], $start[1], 0, date("m"), date("d"), date("Y")));
@@ -1367,48 +1357,23 @@ class presence extends eqLogic {
             }
 
             log::add('presence', 'debug', '==> Dans ' . presence::$_time_tmp . ' secondes');
-
-            /* log::add('presence','debug','Calcul pour prochain déclenchement (simu) : ');
-              $datetime1 = date("Y-m-d H:i:s" ,mktime($start[0], $start[1], 0, date("m"), date("d"), date("Y")));
-              $datetime1 = date_create($datetime1);
-              $datetime1 = $datetime1->getTimestamp();
-              //log::add('presence','debug',$datetime1->getTimestamp());
-
-              $datetime2 = time();
-              $interval = $datetime1 - $datetime2;
-
-              if($interval <= presence::$_time_tmp && $interval >= 0){
-              presence::$_time_tmp = $interval;
-              }
-
-              $datetime1 = date("Y-m-d H:i:s" ,mktime($stop[0], $stop[1]+1, 0, date("m"), date("d"), date("Y")));
-              $datetime1 = date_create($datetime1);
-              $datetime1 = $datetime1->getTimestamp();
-              $datetime2 = time();
-              $interval = $datetime1 - $datetime2;
-
-              if($interval <= presence::$_time_tmp  && $interval >= 0){
-              presence::$_time_tmp = $interval;
-              }
-
-              log::add('presence','debug','==> Dans ' . presence::$_time_tmp . ' secondes');
-             */
         }
     }
 
     public function execute($_trigger_id, $_value) {
-        $cache = cache::byKey('presence::' . $this->getId() . '::lock', false, true);
+        $id = $this->getId();
+        $cache = cache::byKey('presence::' . $_id . '::lock', false, true);
         $lock_security = 0;
         if ($cache->getValue() != 'true') {
-            cache::set('presence::' . $this->getId() . '::lock', 'true', 0);
+            cache::set('presence::' . $_id . '::lock', 'true', 0);
             log::add('presence', 'debug', 'Lancement de presence : ' . $_trigger_id . ' / value : ' . $_value);
             $this->check_state($_trigger_id, $_value);
-            cache::set('presence::' . $this->getId() . '::lock', 'false', 0);
+            cache::set('presence::' . $_id . '::lock', 'false', 0);
             goto end_execute;
         } else {
             log::add('presence', 'debug', 'Déjà en cours d\'exécution, attente de la fin');
             while ($cache->getValue() != 'false'):
-                $cache = cache::byKey('presence::' . $this->getId() . '::lock', false, true);
+                $cache = cache::byKey('presence::' . $_id . '::lock', false, true);
                 log::add('presence', 'debug', 'Boucle');
                 if (($lock_security += 1) > 10) {
                     goto end_error_of_execute;
@@ -1416,9 +1381,9 @@ class presence extends eqLogic {
                 sleep(1);
             endwhile;
             log::add('presence', 'debug', 'Lancement de presence : ' . $_trigger_id . ' / value : ' . $_value);
-            cache::set('presence::' . $this->getId() . '::lock', 'true', 0);
+            cache::set('presence::' . $_id . '::lock', 'true', 0);
             $this->check_state($_trigger_id, $_value);
-            cache::set('presence::' . $this->getId() . '::lock', 'false', 0);
+            cache::set('presence::' . $_id . '::lock', 'false', 0);
             goto end_execute;
         }
         end_error_of_execute:
@@ -1440,7 +1405,7 @@ class presence extends eqLogic {
             $_cmd->save();
             $_cmd->event($date);
         } else
-            log::add('presence', 'warning', 'commande non trouvée ! ');            
+            log::add('presence', 'warning', 'commande non trouvée ! ');
         $this->setConfiguration("holiday_comeback", $date);
         $this->save();
     }
