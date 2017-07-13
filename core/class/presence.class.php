@@ -1022,11 +1022,12 @@ class presence extends eqLogic {
     }
 
     public function lancement_actions($mode, $old_mode) {
-        log::add('presence', 'debug', 'Fonction lancement : ' . $mode . '/' . $old_mode);
+        log::add('presence', 'debug', 'Lancement des actions : entrée en mode (' . $mode . '), sortie du mode (' . $old_mode.')');
         $play_retour_actions = $this->getConfiguration('execute_return_holliday');
         $_id = $this->getId;
 
-        log::add('presence', 'info', 'Déclenchement des actions de sortie du mode ' . $old_mode);
+        if ($old_mode != "")
+            log::add('presence', 'info', 'Déclenchement des actions de sortie du mode ' . $old_mode);
         if ($old_mode == "Vacances" && $play_retour_actions == "1") {
             $action_arrivee = $this->getConfiguration('action_arrivee');
             log::add('presence', 'debug', '--- Retour ---');
@@ -1067,7 +1068,9 @@ class presence extends eqLogic {
                 }
             }
         } else {
-            log::add('presence', 'debug', 'Action sortie :');
+            $exitactions = $this->getConfiguration('modes');
+            if ($exitactions != NULL)
+                log::add('presence', 'debug', 'Traitement des actions de sortie');
             foreach ($this->getConfiguration('modes') as $key => $value) {
                 if ($value['name'] == $old_mode) {
                     foreach ($value['action_exit'] as $_action) {
@@ -1218,10 +1221,12 @@ class presence extends eqLogic {
             }
 
             endofcommand:
-            log::add('presence', 'debug', 'Mise à jour du dernier déclencheur : ' . presence::$_last_declencheur);
-            $last_declencheur->setValue(presence::$_last_declencheur);
-            $last_declencheur->event(presence::$_last_declencheur);
-            $last_declencheur->save();
+            if (presence::$_last_declencheur != NULL) {
+                log::add('presence', 'debug', 'Mise à jour du dernier déclencheur ' . presence::$_last_declencheur);
+                $last_declencheur->setValue(presence::$_last_declencheur);
+                $last_declencheur->event(presence::$_last_declencheur);
+                $last_declencheur->save();
+            }
             log::add('presence', 'debug', '------- Gestion de la simulation  ------');
             $simu_modes = $this->getConfiguration('simulation_modes');
             if ($simu_modes == '') {
@@ -1282,16 +1287,27 @@ class presence extends eqLogic {
     public function simu_presence() {
         $simulation = $this->getConfiguration('cond_simu');
         foreach ($simulation as $_simulation) {
-            log::add('presence', 'debug', 'Objet de simulation');
+            log::add('presence', 'debug', 'lecture des infos de simulation');
             $start = explode(":", $_simulation['debut']);
             $stop = explode(":", $_simulation['fin']);
 
-            // évalue la valeur aléatoire en minutes pour différer par rapport à l'heure de base 
-            $differe = rand(0, $_simulation['differe']);
-
-            log::add('presence', 'debug', 'Début : ' . $start[0] . ':' . $start[1] . ' / Fin : ' . $stop[0] . ' ' . $stop[1] . ' / Différé : ' . $differe);
+            log::add('presence', 'debug', 'Début : ' . $start[0] . ':' . $start[1] . ' / Fin : ' . $stop[0] . ':' . $stop[1] . ' / Différé max : ' . $_simulation['differe'].'mn');
             $cacheKey = 'presence::' . $this->getId() . $start[0] . $start[1] . $stop[0] . $stop[1] . $_simulation['differe'] . '::simulation';
 
+            // lecture du différé
+            $cacheKey1 = 'presence::' . $this->getId() . $start[0] . $start[1] . $stop[0] . $stop[1] . $_simulation['differe'] . '::simulation_differee';
+            $cache = cache::byKey($cacheKey1, false, true);
+            // s'il n'est pas défini on choisit une valeur aléatoire et on la met en cache
+             if ($cache->getValue() == '') {
+                // évalue la valeur aléatoire en minutes pour différer par rapport à l'heure de base 
+                $differe = rand(0, $_simulation['differe']);
+                cache::set($cacheKey1, $differe, 0);
+                log::add('presence', 'debug', 'aucune valeur en cache, stockage du différé de '.$differe.' min');
+             }
+             else {
+                $differe = intval($cache->getValue());
+                log::add('presence', 'debug', 'lecture en cache de la valeur différée '.$differe.' min');
+             }
             // start 0 = heure de départ
             // start 1 = minutes de départ
             // récupète le nombre de minutes de départ et ajoute le différé
@@ -1313,11 +1329,16 @@ class presence extends eqLogic {
             if ($stop[0] > 23) {
                 $stop[0] = 0;
             }
+            log::add('presence', 'debug', 'Début effectif : ' . $start[0] . ':' . $start[1] . ' / Fin effective : ' . $stop[0] . ':' . $stop[1] );
 
             if (date('H') >= $start[0] && date('i') >= $start[1] && date('H') <= $stop[0] && date('i') <= $stop[1]) {
                 $cache = cache::byKey($cacheKey, false, true);
-                log::add('presence', 'debug', 'cache = ' . $cacheKey . '=' . $cache->getValue());
+//                if ($cache == "")
+//                    log::add('presence', 'debug', 'aucune valeur en cache '.$cacheKey);
+//                else
+//                    log::add('presence', 'debug', 'cache = ' . $cacheKey . '=' . $cache->getValue());
                 if ($cache->getValue() != 'inprocess') {
+                    log::add('presence', 'debug', 'lancement des actions de début de simulation');
                     cache::set($cacheKey, 'inprocess', 0);
                     $this->lancement_actions('simulation_on', '');
                 }
@@ -1325,34 +1346,50 @@ class presence extends eqLogic {
             } else {
                 $cache = cache::byKey($cacheKey, false, true);
                 log::add('presence', 'debug', 'cache = ' . $cacheKey . '=' . $cache->getValue());
+                $cache1 = cache::byKey($cacheKey1, false, true);
+                log::add('presence', 'debug', 'cache1 = ' . $cacheKey1 . '=' . $cache1->getValue());
                 if ($cache->getValue() == 'inprocess') {
+                    log::add('presence', 'debug', 'lancement des actions de clôture de simulation');
                     //cache::set($cacheKey,0, 0);
                     $cache->remove();
+                    $cache1 = cache::byKey($cacheKey1, false, true);
+                    $cache1->remove();
                     $this->lancement_actions('simulation_off', '');
                 }
                 log::add('presence', 'debug', '==> arreté');
             }
 
-            log::add('presence', 'debug', 'Calcul pour prochain déclenchement (simu) : ');
-            $datetime1 = date("Y-m-d H:i:s", mktime($start[0], $start[1], 0, date("m"), date("d"), date("Y")));
-            $datetime1 = date_create($datetime1);
-            $datetime1 = $datetime1->getTimestamp();
-            //log::add('presence','debug',$datetime1->getTimestamp());
+            log::add('presence', 'debug', 'Calcul du prochain déclenchement du traitement de la simulation');
+            // évalue le prochain déclenchement du test 
+            // on prend la plus petite des dates entre 
+            // heure de déclenchement - heure de fin et 300s (5mn)
+            
+            $stampStart = mktime($start[0], $start[1], 0, date("m"), date("d"), date("Y"));
+            $actualtime = time();
+            $delta = $stampStart - $actualtime;
+           
+//            $datetime1 = date("Y-m-d H:i:s", mktime($start[0], $start[1], 0, date("m"), date("d"), date("Y")));
+//            $datetime1 = date_create($datetime1);
+//            $datetime1 = $datetime1->getTimestamp();
+//
+//            $datetime2 = $actualtime;
+//            $interval = $datetime1 - $datetime2;
+            log::add('presence','debug','delta='.$delta.' time_tmp='.presence::$_time_tmp );
 
-            $datetime2 = time();
-            $interval = $datetime1 - $datetime2;
-
-            if ($interval <= presence::$_time_tmp && $interval >= 0) {
+            if ($delta <= presence::$_time_tmp && $delta >= 0) {
                 presence::$_time_tmp = $interval;
             }
 
-            $datetime1 = date("Y-m-d H:i:s", mktime($stop[0], $stop[1] + 1, 0, date("m"), date("d"), date("Y")));
-            $datetime1 = date_create($datetime1);
-            $datetime1 = $datetime1->getTimestamp();
-            $datetime2 = time();
-            $interval = $datetime1 - $datetime2;
+            $stampEnd = mktime($stop[0], $stop[1], 0, date("m"), date("d"), date("Y"));
+            $delta = $stampEnd - $actualtime;
 
-            if ($interval <= presence::$_time_tmp && $interval >= 0) {
+//            $datetime1 = date("Y-m-d H:i:s", mktime($stop[0], $stop[1] + 1, 0, date("m"), date("d"), date("Y")));
+//            $datetime1 = date_create($datetime1);
+//            $datetime1 = $datetime1->getTimestamp();
+//            $datetime2 = time();
+//            $interval = $datetime1 - $datetime2;
+
+            if ($delta <= presence::$_time_tmp && $delta >= 0) {
                 presence::$_time_tmp = $interval;
             }
 
