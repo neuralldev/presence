@@ -30,14 +30,11 @@ $eqLogics = eqLogic::byType('presence');
                 <span style="font-size : 1.1em;position:relative; top : 23px;word-break: break-all;white-space: pre-wrap;word-wrap: break-word;color:#4F81BD"><center>{{Ajouter}}</center></span>
             </div>
             <?php
-            foreach ($eqLogics as $eqLogic) {
-                echo '<div class="eqLogicDisplayCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" style="background-color : #ffffff; height : 200px;margin-bottom : 10px;padding : 5px;border-radius: 2px;width : 160px;margin-left : 10px;" >';
-                echo "<center>";
-                echo '<img src="plugins/presence/doc/images/presence_icon.png" height="105" width="95" />';
-                echo "</center>";
-                echo '<span style="font-size : 1.1em;position:relative; top : 15px;word-break: break-all;white-space: pre-wrap;word-wrap: break-word;"><center>' . $eqLogic->getHumanName(true, true) . '</center></span>';
-                echo '</div>';
-            }
+            foreach ($eqLogics as $eqLogic) {?>
+                <div class="eqLogicDisplayCard cursor" data-eqLogic_id="<?php echo $eqLogic->getId();?>" style="background-color : #ffffff; height : 200px;margin-bottom : 10px;padding : 5px;border-radius: 2px;width : 160px;margin-left : 10px;" >
+                    <center><img src="plugins/presence/doc/images/presence_icon.png" height="105" width="95" /></center>
+                    <span style="font-size : 1.1em;position:relative; top : 15px;word-break: break-all;white-space: pre-wrap;word-wrap: break-word;;"><center><?php echo $eqLogic->getHumanName(true, true);?></center></span>
+                </div><?php } ?>
             ?>
         </div>
     </div>
@@ -72,13 +69,13 @@ $eqLogics = eqLogic::byType('presence');
                             <label class="col-lg-3 control-label">{{Catégorie}}</label>
                             <div class="col-lg-8">
                                 <?php
-                                foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) {
-                                    echo '<label class="checkbox-inline">';
-                                    echo '<input type="checkbox" class="eqLogicAttr" data-l1key="category" data-l2key="' . $key . '" />' . $value['name'];
-                                    echo '</label>';
+                                foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) {?>
+                                    <label class="checkbox-inline">
+                                    <input type="checkbox" class="eqLogicAttr" data-l1key="category" data-l2key="<?php echo $key; ?>" /><?php echo $value['name'];?>
+                                    </label>
+                                <?php
                                 }
                                 ?>
-
                             </div>
                         </div>
 
@@ -89,7 +86,6 @@ $eqLogics = eqLogic::byType('presence');
                                 <label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isVisibl" checked/>{{Visible}}</label>
                             </div>
                         </div>
-
 
                         <div class="form-group">
                             <label class="col-lg-3 control-label">{{Jour de retour}}</label>
@@ -123,8 +119,10 @@ $eqLogics = eqLogic::byType('presence');
                     </fieldset>
                 </form>
                 <div>
-                    <!--</br>
-                    <a class="btn btn-info tooltips"  id="bt_presenceExport" title="{{Export des données}}"><i class="fa fa-download"></i>{{ Export}}</a><br/>-->
+<?php
+//<!--</br>
+//                    <a class="btn btn-info tooltips"  id="bt_presenceExport" title="{{Export des données}}"><i class="fa fa-download"></i>{{ Export}}</a><br/>-->
+?>
                 </div>
             </div>
         </div>

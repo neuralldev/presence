@@ -1433,7 +1433,7 @@ class presence extends eqLogic {
             $_cmd->save();
             $_cmd->event($date);
         } else
-            log::add('presence', 'warning', 'commande non trouvée ! ');
+            log::add('presence', 'warning', 'date de retour non trouvée ! ');
         $this->setConfiguration("holiday_comeback", $date);
         $this->save();
     }
@@ -1486,66 +1486,59 @@ class presenceCmd extends cmd {
         }
 
         if (!is_object($lockState) || $lockState->execCmd() == 0) {
-
-            if (1) {
-                $cmd = $eqLogic->getCmd();
-                foreach ($cmd as $cmd_list) {
-                    if ($cmd_list->getName() == 'Mode') {
-                        $cmd = $cmd_list;
-                        break;
-                    }
+            $cmd = $eqLogic->getCmd();
+            foreach ($cmd as $cmd_list) {
+                if ($cmd_list->getName() == 'Mode') {
+                    $cmd = $cmd_list;
+                    break;
                 }
-                $old_mode = $cmd->getValue();
-                log::add('presence', 'info', 'Mode précédent :' . $old_mode . ' / Mode choisi : ' . $this->getLogicalId());
-                if ($cmd->getValue() != $this->getLogicalId()) {
-                    $cmd = $eqLogic->getCmd('info', 'Mode');
-                    log::add('presence', 'info', 'Changement manuel de mode :' . $cmd->getId());
-                    $cmd->setValue($this->getLogicalId());
-                    $cmd->save();
-                    $cmd->event($this->getLogicalId());
-                    $cmd->setCollectDate(date('Y-m-d H:i:s'));
-                    if ($this->getLogicalId() != "Vacances") {
-                        $eqLogic->lancement_actions($this->getLogicalId(), $old_mode);
-                    }
+            }
+            $old_mode = $cmd->getValue();
+            log::add('presence', 'info', 'Mode précédent :' . $old_mode . ' / Mode choisi : ' . $this->getLogicalId());
+            if ($cmd->getValue() != $this->getLogicalId()) {
+                $cmd = $eqLogic->getCmd('info', 'Mode');
+                log::add('presence', 'info', 'Changement manuel de mode :' . $cmd->getId());
+                $cmd->setValue($this->getLogicalId());
+                $cmd->save();
+                $cmd->event($this->getLogicalId());
+                $cmd->setCollectDate(date('Y-m-d H:i:s'));
+                if ($this->getLogicalId() != "Vacances") {
+                    $eqLogic->lancement_actions($this->getLogicalId(), $old_mode);
                 }
-
-                $cmd = null;
-                foreach ($eqLogic->getCmd() as $cmd_list) {
-                    if ($cmd_list->getName() == 'Retour') {
-                        $cmd = $cmd_list;
-                        break;
-                    }
+            }
+            $cmd = null;
+            foreach ($eqLogic->getCmd() as $cmd_list) {
+                if ($cmd_list->getName() == 'Retour') {
+                    $cmd = $cmd_list;
+                    break;
                 }
-                if ($this->getLogicalId() == "Vacances") {
-                    $cmd->setIsVisible(1);
-                    $eqLogic->clear_vacances();
-                    //$eqLogic->refreshWidget();	
-                    $cron = cron::byClassAndFunction('presence', 'Update_cron');
-                    if (!is_object($cron)) {
-                        $cron = new cron();
-                        $cron->setClass('presence');
-                        $cron->setFunction('Update_cron');
-                        $cron->setEnable(1);
-                        $cron->setDeamon(0);
-                        $cron->setSchedule('*/2 * * * *');
-                        $cron->save();
-                    } else {
-                        $cron->setSchedule('*/2 * * * *');
-                        $cron->save();
-                    }
-                    $cmd->save();
-                    $eqLogic->refreshWidget();
+            }
+            if ($this->getLogicalId() == "Vacances") {
+                $cmd->setIsVisible(1);
+                $eqLogic->clear_vacances();
+                $cron = cron::byClassAndFunction('presence', 'Update_cron');
+                if (!is_object($cron)) {
+                    $cron = new cron();
+                    $cron->setClass('presence');
+                    $cron->setFunction('Update_cron');
+                    $cron->setEnable(1);
+                    $cron->setDeamon(0);
+                    $cron->setSchedule('*/2 * * * *');
+                    $cron->save();
                 } else {
-                    //$eqLogic->refreshWidget();	
-                    $cmd->setIsVisible(0);
-                    $cmd->save();
-                    $eqLogic->refreshWidget();
+                    $cron->setSchedule('*/2 * * * *');
+                    $cron->save();
                 }
+                $cmd->save();
+                $eqLogic->refreshWidget();
+            } else {
+                $cmd->setIsVisible(0);
+                $cmd->save();
+                $eqLogic->refreshWidget();
             }
             log::add('presence', 'event', 'Je passe dans le execmd');
         }
         $eqLogic->refreshWidget();
-        //return '';
     }
 
     public function formatValueWidget($_mode) {
