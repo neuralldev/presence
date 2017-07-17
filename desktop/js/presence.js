@@ -22,17 +22,12 @@ $('#tab_modes a').click(function(e) {
 });
 
 $('.bt_chooseIcon').on('click', function () {
-        /*var el = $(this);
-		//el.find('i').remove();
-        chooseIcon(function(_icon) {
-            el.find('i').empty().add(_icon);
-        });*/
-    });
-	
-$('#bt_presenceExport').on('click', function() {
-	$('#md_modal').dialog({title: "{{Export}}"});
-    $('#md_modal').load('index.php?v=d&plugin=presence&modal=export').dialog('open');
 });
+	
+//$('#bt_presenceExport').on('click', function() {
+//	$('#md_modal').dialog({title: "{{Export}}"});
+//    $('#md_modal').load('index.php?v=d&plugin=presence&modal=export').dialog('open');
+//});
 
 
 $(document).ready(function() {
@@ -41,71 +36,47 @@ $(document).ready(function() {
 		shortMonthNames: ["Jan", "Fev", "Mar", "Avr", "Mai", "Jui", "Juil", "Août", "Sep", "Oct", "Nov", "Dec"],
 		shortDayNames: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
 		fullDayNames: ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"]
-	});	
-	
-
-	// $('#simu_modes').multiSelect({
-		// numberDisplayed: 4
-	// });	
-	//$('#view_modes').multiSelect({
-	//	numberDisplayed: 5
-	//});
-	
-	
-	// var modes_simulation = $('#simu_modes').val();
-	// if(modes_simulation.length == 0){
-		// $('#simu_modes').multiSelect('select', "5");
-	// }
-	
-	// var modes_view = $('#view_modes').val();
-	// if(modes_view.length == 0){
-		// $('#view_modes').multiSelect('select', "1");
-	// }
-	
-	
-	
+	});
 });
 /**************** Actions Boutons ***********/
 
-
-
-
-$('#bt_addActionPresent').on('click', function() {
-    addAction({}, 'action_present', '{{Action}}');
-});
-$('#bt_addActionExitPresent').on('click', function() {
-    addAction({}, 'action_exit_present', '{{Action}}');
-});
-$('#bt_addCondPresent').on('click', function() {
-    addTrigger('cond_present',{});
-});
-$('#bt_addActionAbsent').on('click', function() {
-    addAction({}, 'action_absent', '{{Action}}');
-});
-$('#bt_addActionExitAbsent').on('click', function() {
-    addAction({}, 'action_exit_absent', '{{Action}}');
-});
-$('#bt_addCondAbsent').on('click', function() {
-    addTrigger('cond_absent',{});
-});
-$('#bt_addActionNuit').on('click', function() {
-    addAction({}, 'action_nuit', '{{Action}}');
-});
-$('#bt_addActionExitNuit').on('click', function() {
-    addAction({}, 'action_exit_nuit', '{{Action}}');
-});
-$('#bt_addCondNuit').on('click', function() {
-    addTrigger('cond_nuit',{});
-});
-$('#bt_addActionTravail').on('click', function() {
-    addAction({}, 'action_travail', '{{Action}}');
-});
-$('#bt_addActionExitTravail').on('click', function() {
-    addAction({}, 'action_exit_travail', '{{Action}}');
-});
-$('#bt_addCondTravail').on('click', function() {
-    addTrigger('cond_travail',{});
-});
+//$('#bt_addActionPresent').on('click', function() {
+//    addAction({}, 'action_present', '{{Action}}');
+//});
+//$('#bt_addActionExitPresent').on('click', function() {
+//    addAction({}, 'action_exit_present', '{{Action}}');
+//});
+//$('#bt_addCondPresent').on('click', function() {
+//    addTrigger('cond_present',{});
+//});
+//$('#bt_addActionAbsent').on('click', function() {
+//    addAction({}, 'action_absent', '{{Action}}');
+//});
+//$('#bt_addActionExitAbsent').on('click', function() {
+//    addAction({}, 'action_exit_absent', '{{Action}}');
+//});
+//$('#bt_addCondAbsent').on('click', function() {
+//    addTrigger('cond_absent',{});
+//});
+//$('#bt_addActionNuit').on('click', function() {
+//    addAction({}, 'action_nuit', '{{Action}}');
+//});
+//$('#bt_addActionExitNuit').on('click', function() {
+//    addAction({}, 'action_exit_nuit', '{{Action}}');
+//});
+//$('#bt_addCondNuit').on('click', function() {
+//    addTrigger('cond_nuit',{});
+//});
+//$('#bt_addActionTravail').on('click', function() {
+//    addAction({}, 'action_travail', '{{Action}}');
+//});
+//$('#bt_addActionExitTravail').on('click', function() {
+//    addAction({}, 'action_exit_travail', '{{Action}}');
+//});
+//$('#bt_addCondTravail').on('click', function() {
+//    addTrigger('cond_travail',{});
+//});
+// simulation
 $('#bt_addActionDepart').on('click', function() {
     addVacances({}, 'action_depart', '{{Action}}');
 });
@@ -165,8 +136,6 @@ function AddMode(_mode){
 	
 	$('#tab_modes').find('a[mode_name="'+mode_without_space+'"] i').attr("style","");
 	
-	//$('#div_cond_' + _mode.name + ' .cond_' + _mode.name + ':last').setValues(_trigger, '.triggerAttr');
-	
 	$('#bt_addCond' + mode_without_space).on('click', function() {
 		addTrigger('cond_' + mode_without_space,{});
 	});
@@ -180,8 +149,6 @@ function AddMode(_mode){
 	});
 }
 
-
-
 /**************** Commun ***********/
 
 $('body').undelegate('.modeAction[data-l1key=chooseIcon]', 'click').delegate('.modeAction[data-l1key=chooseIcon]', 'click', function () {
@@ -189,7 +156,6 @@ $('body').undelegate('.modeAction[data-l1key=chooseIcon]', 'click').delegate('.m
 	mode_name = mode_name.substring(4);
 	var mode = $("#tab_modes").find("[mode_name="+mode_name+"]");
     chooseIcon(function (_icon) {
-		//console.log(_icon);
         mode.find('.ModeAttr[data-l1key=icon]').empty().append(_icon);
     });
 });
@@ -223,7 +189,6 @@ $('body').undelegate('.modeAction[data-l1key=chooseName]', 'click').delegate('.m
     });
 });
 
-
 $('body').undelegate('.modeAction[data-l1key=removeIcon]', 'click').delegate('.modeAction[data-l1key=removeIcon]', 'click', function () {
     var mode_name = $(this).closest('.tabAttr ').attr("id");
 	mode_name = mode_name.substring(4);
@@ -248,7 +213,6 @@ $("body").delegate(".listEquipement", 'click', function() {
     var type = $(this).attr('data-type');
     var el = $(this).closest('.' + type).find('.expressionAttr[data-l1key=eqLogic]');
     jeedom.eqLogic.getSelectModal({}, function(result) {
-        //console.log(result);
         el.value(result.human);
     });
 });
@@ -264,11 +228,11 @@ $("body").delegate(".listCmdAction", 'click', function() {
     });
 });
 
-$('#bt_cronGenerator').on('click',function(){
-    jeedom.getCronSelectModal({},function (result) {
-        $('.eqLogicAttr[data-l1key=configuration][data-l2key=repeat_commande_cron]').value(result.value);
-    });
-});
+//$('#bt_cronGenerator').on('click',function(){
+//    jeedom.getCronSelectModal({},function (result) {
+//        $('.eqLogicAttr[data-l1key=configuration][data-l2key=repeat_commande_cron]').value(result.value);
+//    });
+//});
 
 $(".eqLogic").delegate(".listCmdInfo", 'click', function () {
     var el = $(this).closest('.form-group').find('.eqLogicAttr');
@@ -334,7 +298,7 @@ function saveEqLogic(_eqLogic) {
 	_eqLogic.configuration.modes = [];
 	$("#tab_modes li a[class*='ModeAttr']").each(function () {
 		var my_mode = [];
-		var icones_size = $('#icones_size').val();
+		//var icones_size = $('#icones_size').val();
 		//$(this).find(".ModeAttr i").attr("style","font-size:" + icones_size);
 		my_mode = $(this).getValues('.ModeAttr')[0];
 		var tmp_icon_name = my_mode.icon;
@@ -398,154 +362,140 @@ function saveEqLogic(_eqLogic) {
 	state_order = state_order.substr(0,state_order.length -1);
 	
 	_eqLogic.configuration.state_order = state_order;
-	
-	
-	
-	//_eqLogic.configuration.remove("condition_present");
-	
-	//_eqLogic.configuration.present_name = $('#present_name').val();
-	//_eqLogic.configuration.absent_name = $('#absent_name').val();
-	//_eqLogic.configuration.nuit_name = $('#nuit_name').val();
-	//_eqLogic.configuration.travail_name = $('#travail_name').val();
-	//_eqLogic.configuration.vacances_name = $('#vacances_name').val();
-	
+		
     return _eqLogic;
 }
 
 function printEqLogic(_eqLogic) {
 
-	var view_modes = '' ;
-	var priority_modes_list = '' ;
-	var priority_modes_list_template = '' ;
-	var list_modes = [];
-	$("#tab_modes li a[class*='ModeAttr']").remove();
-	$(".tab-content div[class*='tabAttr']").remove();
-	
-	$('#div_cond_simu').empty();
-	$('#div_action_depart').empty();
+    var view_modes = '' ;
+    var priority_modes_list = '' ;
+    var priority_modes_list_template = '' ;
+    var list_modes = [];
+    $("#tab_modes li a[class*='ModeAttr']").remove();
+    $(".tab-content div[class*='tabAttr']").remove();
+
+    $('#div_cond_simu').empty();
+    $('#div_action_depart').empty();
     $('#div_action_arrivee').empty();
     $('#div_action_simulation_on').empty();
     $('#div_action_simulation_off').empty();
     $('#state_order_list').empty();
     $('#state_order_list_template').empty();
     $('#icones_size').empty();
-	$('#view_modes').empty();
-	$('#simu_modes').empty();
-	$('#state_order_list').empty();
-	$('#state_order_list_template').empty();
+    $('#view_modes').empty();
+    $('#simu_modes').empty();
+    $('#state_order_list').empty();
+    $('#state_order_list_template').empty();
     
-    if (isset(_eqLogic.configuration)) {
-	
-
-		if (isset(_eqLogic.configuration.modes)) {
+    if (isset(_eqLogic.configuration)) {	
+        if (isset(_eqLogic.configuration.modes)) {
             for (var i in _eqLogic.configuration.modes) {
-				list_modes.push(_eqLogic.configuration.modes[i].name);
-				view_modes += '<option value="'+ _eqLogic.configuration.modes[i].name +'">'+ _eqLogic.configuration.modes[i].name  +'</option>';
-				priority_modes_list_template += '<li class="" style="    height: 1.5em;font-size:100%;padding-left:0.8em;;margin-bottom:0.2em;color: #fff;background-color: #d9534f;border-radius: .25em;" mode_name="' + _eqLogic.configuration.modes[i].name + '"><span class="fa fa-arrows-v"><span/> '+ _eqLogic.configuration.modes[i].name +'</li>';
+                list_modes.push(_eqLogic.configuration.modes[i].name);
+                view_modes += '<option value="'+ _eqLogic.configuration.modes[i].name +'">'+ _eqLogic.configuration.modes[i].name  +'</option>';
+                priority_modes_list_template += '<li class="" style="    height: 1.5em;font-size:100%;padding-left:0.8em;;margin-bottom:0.2em;color: #fff;background-color: #d9534f;border-radius: .25em;" mode_name="' + _eqLogic.configuration.modes[i].name + '"><span class="fa fa-arrows-v"><span/> '+ _eqLogic.configuration.modes[i].name +'</li>';
                 AddMode(_eqLogic.configuration.modes[i]);
-				//console.log(_eqLogic.configuration.modes[i]);
-				if (isset(_eqLogic.configuration.modes[i].action)) {
-					for (var j in _eqLogic.configuration.modes[i].action) {
-						addAction(_eqLogic.configuration.modes[i].action[j], 'action_' + _eqLogic.configuration.modes[i].name, '{{Action}}');
-					}
-				}
-				if (isset(_eqLogic.configuration.modes[i].action_exit)) {
-					for (var j in _eqLogic.configuration.modes[i].action_exit) {
-						addAction(_eqLogic.configuration.modes[i].action_exit[j], 'action_exit_' + _eqLogic.configuration.modes[i].name, '{{Action}}');
-					}
-				}
-				if (isset(_eqLogic.configuration.modes[i].condition)) {
-					for (var j in _eqLogic.configuration.modes[i].condition) {
-						addTrigger('cond_' + _eqLogic.configuration.modes[i].name, _eqLogic.configuration.modes[i].condition[j]);
-					}
-				}
-			}
-			view_modes += '<option value="Vacances">Vacances</option>';
+                //console.log(_eqLogic.configuration.modes[i]);
+                if (isset(_eqLogic.configuration.modes[i].action)) {
+                        for (var j in _eqLogic.configuration.modes[i].action) {
+                                addAction(_eqLogic.configuration.modes[i].action[j], 'action_' + _eqLogic.configuration.modes[i].name, '{{Action}}');
+                        }
+                }
+                if (isset(_eqLogic.configuration.modes[i].action_exit)) {
+                        for (var j in _eqLogic.configuration.modes[i].action_exit) {
+                                addAction(_eqLogic.configuration.modes[i].action_exit[j], 'action_exit_' + _eqLogic.configuration.modes[i].name, '{{Action}}');
+                        }
+                }
+                if (isset(_eqLogic.configuration.modes[i].condition)) {
+                        for (var j in _eqLogic.configuration.modes[i].condition) {
+                                addTrigger('cond_' + _eqLogic.configuration.modes[i].name, _eqLogic.configuration.modes[i].condition[j]);
+                                }
+                        }
+                }
+                view_modes += '<option value="Vacances">Vacances</option>';
         }
 		
-		if(isset(_eqLogic.configuration.state_order)){
-			 var res = _eqLogic.configuration.state_order.split(";");
-			 var index_modes = 0;
-			 for(index_modes = 0; index_modes < res.length ; ++index_modes){
-				if(res[index_modes] != ""){
-					console.log(list_modes.indexOf(res[index_modes]));
-					if(list_modes.indexOf(res[index_modes]) != -1){
-					priority_modes_list += '<li class="" style="    height: 1.5em;font-size:100%;padding-left:0.8em;margin-bottom:0.2em;background-color: #5bc0de;color: #fff;border-radius: .25em;" mode_name="' + res[index_modes] + '"><span class="fa fa-arrows-v"><span/> '+ res[index_modes] +'</li>';
-					}
-				}
-			 }
-		}
+        if(isset(_eqLogic.configuration.state_order)){
+                 var res = _eqLogic.configuration.state_order.split(";");
+                 var index_modes = 0;
+                 for(index_modes = 0; index_modes < res.length ; ++index_modes){
+                        if(res[index_modes] != ""){
+                                console.log(list_modes.indexOf(res[index_modes]));
+                                if(list_modes.indexOf(res[index_modes]) != -1){
+                                priority_modes_list += '<li class="" style="    height: 1.5em;font-size:100%;padding-left:0.8em;margin-bottom:0.2em;background-color: #5bc0de;color: #fff;border-radius: .25em;" mode_name="' + res[index_modes] + '"><span class="fa fa-arrows-v"><span/> '+ res[index_modes] +'</li>';
+                                }
+                        }
+                 }
+        }
 	
-		if (isset(_eqLogic.configuration.action_depart)) {
+        if (isset(_eqLogic.configuration.action_depart)) {
             for (var i in _eqLogic.configuration.action_depart) {
                 addVacances(_eqLogic.configuration.action_depart[i], 'action_depart', '{{Action}}');
             }
         }
-		if (isset(_eqLogic.configuration.action_arrivee)) {
+        if (isset(_eqLogic.configuration.action_arrivee)) {
             for (var i in _eqLogic.configuration.action_arrivee) {
                 addVacances(_eqLogic.configuration.action_arrivee[i], 'action_arrivee', '{{Action}}');
             }
         }
-		if (isset(_eqLogic.configuration.action_simulation_on)) {
+        if (isset(_eqLogic.configuration.action_simulation_on)) {
             for (var i in _eqLogic.configuration.action_simulation_on) {
                 addAction(_eqLogic.configuration.action_simulation_on[i], 'action_simulation_on', '{{Action}}');
             }
         }
-		if (isset(_eqLogic.configuration.action_simulation_off)) {
+        if (isset(_eqLogic.configuration.action_simulation_off)) {
             for (var i in _eqLogic.configuration.action_simulation_off) {
                 addAction(_eqLogic.configuration.action_simulation_off[i], 'action_simulation_off', '{{Action}}');
             }
         }
-		if (isset(_eqLogic.configuration.cond_simu)) {
+        if (isset(_eqLogic.configuration.cond_simu)) {
             for (var i in _eqLogic.configuration.cond_simu) {
                 addSimu('cond_simu',_eqLogic.configuration.cond_simu[i]);
             }
         }
 
-	
+        $('#view_modes').append(view_modes);
+        $('#simu_modes').append(view_modes);
+        $('#icones_size').append('<option value="small">Petit</option><option value="initial">Normal</option><option value="medium">Medium</option><option value="large">Large</option><option value="xx-large">X-Large</option>');		
+        $('#state_order_list').append(priority_modes_list);
+        $('#state_order_list_template').append(priority_modes_list_template);
+
+        $("#state_order_list li").each(function () {
+                $("#state_order_list_template li[mode_name='" + $(this).attr('mode_name') + "']").remove();
+        });
+
+        $('#view_modes').multiSelect('destroy').multiSelect();
+        $('#simu_modes').multiSelect('destroy').multiSelect();
+        $('#icones_size').multiSelect('destroy').multiSelect();
+        $('#state_order_list, #state_order_list_template').sortable({connectWith: ".connectedSortable"}).disableSelection();
 		
-		$('#view_modes').append(view_modes);
-		$('#simu_modes').append(view_modes);
-		$('#icones_size').append('<option value="small">Petit</option><option value="initial">Normal</option><option value="medium">Medium</option><option value="large">Large</option><option value="xx-large">X-Large</option>');		
-		$('#state_order_list').append(priority_modes_list);
-		$('#state_order_list_template').append(priority_modes_list_template);
-		
-		$("#state_order_list li").each(function () {
-			$("#state_order_list_template li[mode_name='" + $(this).attr('mode_name') + "']").remove();
-		});
-		
-                $('#view_modes').multiSelect('destroy').multiSelect();
-		$('#simu_modes').multiSelect('destroy').multiSelect();
-		$('#icones_size').multiSelect('destroy').multiSelect();
-		$('#state_order_list, #state_order_list_template').sortable({connectWith: ".connectedSortable"}).disableSelection();
-		
-		if (isset(_eqLogic.configuration.simulation_modes)) {
-			 var res = _eqLogic.configuration.simulation_modes.split(";");
-			 var index_modes = 0;
-			 for(index_modes = 0; index_modes < res.length ; ++index_modes){
-				 $('#simu_modes').multiSelect('select', res[index_modes]);
-			 }
+        if (isset(_eqLogic.configuration.simulation_modes)) {
+                 var res = _eqLogic.configuration.simulation_modes.split(";");
+                 var index_modes = 0;
+                 for(index_modes = 0; index_modes < res.length ; ++index_modes){
+                         $('#simu_modes').multiSelect('select', res[index_modes]);
+                 }
         }
-		if (isset(_eqLogic.configuration.modes_view)) {
-			var res = _eqLogic.configuration.modes_view.split(";");
-			 var index_modes = 0;
-			 for(index_modes = 0; index_modes < res.length ; ++index_modes){
-				 $('#view_modes').multiSelect('select', res[index_modes]);
-			 }
-		}
+        if (isset(_eqLogic.configuration.modes_view)) {
+                var res = _eqLogic.configuration.modes_view.split(";");
+                 var index_modes = 0;
+                 for(index_modes = 0; index_modes < res.length ; ++index_modes){
+                         $('#view_modes').multiSelect('select', res[index_modes]);
+                 }
+        }
 		
-		if (isset(_eqLogic.configuration.state_order)) {
-			var res = _eqLogic.configuration.state_order.split(";");
-			 var index_modes = 0;
-			 for(index_modes = 0; index_modes < res.length ; ++index_modes){
-				 //$('#view_modes').multiSelect('select', res[index_modes]);
-			 }
-		}
-		
-		if (isset(_eqLogic.configuration.icones_size)) {
-			$('#icones_size').multiSelect('select', _eqLogic.configuration.icones_size);
-		}
-		
+        if (isset(_eqLogic.configuration.state_order)) {
+                var res = _eqLogic.configuration.state_order.split(";");
+                 var index_modes = 0;
+                 for(index_modes = 0; index_modes < res.length ; ++index_modes){
+                         //$('#view_modes').multiSelect('select', res[index_modes]);
+                 }
+        }
+
+        if (isset(_eqLogic.configuration.icones_size)) {
+            $('#icones_size').multiSelect('select', _eqLogic.configuration.icones_size);
+        }
+
     }
 }
 
@@ -557,31 +507,29 @@ function addAction(_action, _type, _name, _el) {
         _action.options = {};
     }
     var input = '';
-    var button = 'btn-default';
-    //input = 'has-warning';
-    button = 'btn-warning';
-    
-    var div = '<div class="' + _type + '">';
-    div += '<div class="form-group ">';
-    div += '<label class="col-lg-1 control-label">' + _name + '</label>';
-    div += '<div class="col-lg-1">';
-    div += '<a class="btn ' + button + ' btn-sm listCmdAction" data-type="' + _type + '"><i class="fa fa-list-alt"></i></a>';
-    div += '</div>';
-    div += '<div class="col-lg-3 ' + input + '">';
-    div += '<input class="expressionAttr form-control input-sm cmdAction" data-l1key="cmd" data-type="' + _type + '" />';
-    div += '</div>';
-    div += '<div class="col-lg-6 actionOptions">';
-    div += jeedom.cmd.displayActionOption(init(_action.cmd, ''), _action.options);
-    div += '</div>';
-    div += '<div class="col-lg-1">';
-    div += '<i class="fa fa-minus-circle pull-left cursor bt_removeAction" data-type="' + _type + '"></i>';
-    div += '</div>';
-    div += '</div>';
+    var button = 'btn-warning';
+  
+    var _mydiv = '<div class="' + _type + '">';
+    _mydiv += '<div class="form-group ">';
+    _mydiv += '<label class="col-lg-1 control-label">' + _name + '</label>';
+    _mydiv += '<div class="col-lg-1">';
+    _mydiv += '<a class="btn ' + button + ' btn-sm listCmdAction" data-type="' + _type + '"><i class="fa fa-list-alt"></i></a>';
+    _mydiv += '</div>';
+    _mydiv += '<div class="col-lg-3 ' + input + '">';
+    _mydiv += '<input class="expressionAttr form-control input-sm cmdAction" data-l1key="cmd" data-type="' + _type + '" />';
+    _mydiv += '</div>';
+    _mydiv += '<div class="col-lg-6 actionOptions">';
+    _mydiv += jeedom.cmd.displayActionOption(init(_action.cmd, ''), _action.options);
+    _mydiv += '</div>';
+    _mydiv += '<div class="col-lg-1">';
+    _mydiv += '<i class="fa fa-minus-circle pull-left cursor bt_removeAction" data-type="' + _type + '"></i>';
+    _mydiv += '</div>';
+    _mydiv += '</div>';
     if (isset(_el)) {
-        _el.find('.div_' + _type).append(div);
+        _el.find('.div_' + _type).append(_mydiv);
         _el.find('.' + _type + ':last').setValues(_action, '.expressionAttr');
     } else {
-        $('#div_' + _type).append(div);
+        $('#div_' + _type).append(_mydiv);
         $('#div_' + _type + ' .' + _type + ':last').setValues(_action, '.expressionAttr');
     }
 }
@@ -595,48 +543,43 @@ function addVacances(_action, _type, _name, _el) {
     }
     var input = '';
     var button = 'btn-default';
-    if (_type == 'action_depart') {
-        input = 'has-warning';
-        button = 'btn-warning';
-    }
-	if (_type == 'action_arrivee') {
+    if ((_type == 'action_depart')||(_type == 'action_arrivee')) {
         input = 'has-warning';
         button = 'btn-warning';
     }
     
-    var div = '<div class="' + _type + '">';
-    div += '<div class="form-group ">';
-    div += '<label class="col-lg-1 control-label">' + _name + '</label>';
-    div += '<div class="col-lg-1">';
-    div += '<a class="btn ' + button + ' btn-sm listCmdAction" data-type="' + _type + '"><i class="fa fa-list-alt"></i></a>';
-    div += '</div>';
-    div += '<div class="col-lg-3 ' + input + '">';
-    div += '<input class="expressionAttr form-control input-sm cmdAction" data-l1key="cmd" data-type="' + _type + '" />';
-    div += '</div>';
-    div += '<div class="col-lg-3 actionOptions">';
-    div += jeedom.cmd.displayActionOption(init(_action.cmd, ''), _action.options);
-    div += '</div>';
-	if(_type == "action_arrivee"){
-		div += '<label class="col-lg-1 control-label">{{Avant :}}</label>';
-	}
-	else{
-		div += '<label class="col-lg-1 control-label">{{Après :}}</label>';
-	}
-	
-    div += '<div class="col-lg-1 has-success text-right">';
-    div += '<input class="expressionAttr form-control input-sm" data-l1key="waitDelay" />';
-    div += '<input class="expressionAttr form-control input-sm" style="display:none" data-l1key="already_exec" value="0"/>';
-    div += '</div>';
-	div += '<label class="col-lg-1 control-label">{{minute(s)}}</label>';	
-    div += '<div class="col-lg-1">';
-    div += '<i class="fa fa-minus-circle pull-left cursor bt_removeAction" data-type="' + _type + '"></i>';
-    div += '</div>';
-    div += '</div>';
+    var _mydiv = '<div class="' + _type + '">';
+    _mydiv += '<div class="form-group ">';
+    _mydiv += '<label class="col-lg-1 control-label">' + _name + '</label>';
+    _mydiv += '<div class="col-lg-1">';
+    _mydiv += '<a class="btn ' + button + ' btn-sm listCmdAction" data-type="' + _type + '"><i class="fa fa-list-alt"></i></a>';
+    _mydiv += '</div>';
+    _mydiv += '<div class="col-lg-3 ' + input + '">';
+    _mydiv += '<input class="expressionAttr form-control input-sm cmdAction" data-l1key="cmd" data-type="' + _type + '" />';
+    _mydiv += '</div>';
+    _mydiv += '<div class="col-lg-3 actionOptions">';
+    _mydiv += jeedom.cmd.displayActionOption(init(_action.cmd, ''), _action.options);
+    _mydiv += '</div>';
+    if(_type == "action_arrivee"){
+            _mydiv += '<label class="col-lg-1 control-label">{{Avant :}}</label>';
+    }
+    else{
+            _mydiv += '<label class="col-lg-1 control-label">{{Après :}}</label>';
+    }
+    _mydiv += '<div class="col-lg-1 has-success text-right">';
+    _mydiv += '<input class="expressionAttr form-control input-sm" data-l1key="waitDelay" />';
+    _mydiv += '<input class="expressionAttr form-control input-sm" style="display:none" data-l1key="already_exec" value="0"/>';
+    _mydiv += '</div>';
+    _mydiv += '<label class="col-lg-1 control-label">{{minute(s)}}</label>';	
+    _mydiv += '<div class="col-lg-1">';
+    _mydiv += '<i class="fa fa-minus-circle pull-left cursor bt_removeAction" data-type="' + _type + '"></i>';
+    _mydiv += '</div>';
+    _mydiv += '</div>';
     if (isset(_el)) {
-        _el.find('.div_' + _type).append(div);
+        _el.find('.div_' + _type).append(_mydiv);
         _el.find('.' + _type + ':last').setValues(_action, '.expressionAttr');
     } else {
-        $('#div_' + _type).append(div);
+        $('#div_' + _type).append(_mydiv);
         $('#div_' + _type + ' .' + _type + ':last').setValues(_action, '.expressionAttr');
     }
 }
@@ -645,84 +588,71 @@ function addTrigger(_type, _trigger, _el) {
     if (!isset(_trigger)) {
         _trigger = {};
     }
-    var div = '<div class="'+_type+'">';
-    div += '<div class="conditionAttr form-group">';
-    div += '<label class="col-lg-1 control-label">{{Quand }}</label>';
-    div += '<div class="col-lg-1 has-success">';
-	div += '<a class="btn btn-default btn-sm listCmdInfo btn-success" data-type="' + _type + '"><i class="fa fa-list-alt"></i></a>';
-    div += '</div>';
-	div += '<div class="col-lg-2 has-success">';
-	div += '<input class="triggerAttr form-control input-sm" data-l1key="cmd" data-type="' + _type + '"/>';
-	div += '</div>';
-    //div += '<label class="col-lg-1 control-label">{{Sur état :}}</label>';
-    div += '<div class="col-lg-1 has-success">';
-	//div += '<select style="width : 200px;" class="triggerAttr form-control input-sm" data-l1key="Startvalue">';
-	//div += '<option value="0">Off - Fin de détection</option>';
-	//div += '<option value="1">On - Détection / Lumière</option>';
-	//div += '</select>';
-	
-	div += '<select style="" class="triggerAttr form-control input-sm" data-l1key="operande">';
-	div += '<option value="<"><</option>';
-	div += '<option value="==">=</option>';
-	div += '<option value=">">></option>';
-	div += '<option value="!=">!=</option>';
-	div += '<option value="~">Contient</option>';
-	div += '</select>';
-    div += '</div>';
-	
-	div += '<div class="col-lg-2 has-success">';
-	div += '<input class="triggerAttr form-control input-sm" data-l1key="comp_value" />';
-	div += '</div>';
-	
-    div += '<label class="col-lg-1 control-label">{{Après :}}</label>';
-    div += '<div class="col-lg-1 has-success text-right">';
-    div += '<input class="triggerAttr form-control input-sm" data-l1key="waitDelay" />';
-	div += '</div>';
-	div += '<label class="col-lg-1 control-label">{{minute(s)}}</label>';
-
-	div += '<div class="col-lg-1 text-right">';
-	div += '<select style="" class="triggerAttr form-control input-sm" data-l1key="and">';
-	div += '<option value="-1">Seule</option>';
-	div += '<option value="1">Et</option>';
-	//div += '<option value="">Et (Groupe 2)</option>';
-	div += '<option value="0">Ou</option>';
-	div += '</select>';
-	
-	//div += '<label class="control-label">{{Et }}</label><input id="chkboxand" type="checkbox" class="triggerAttr input-sm" data-l1key="and" checked/>'
-	div += '</div>';
-    div += '<div class="col-lg-1">';
-    div += '<i class="fa fa-minus-circle pull-left cursor bt_removeTrigger" data-type="' + _type + '"></i>';
-    div += '</div>';
-    div += '</div>';
-    $('#div_' + _type).append(div);
+    var _mydiv = '<div class="'+_type+'">';
+    _mydiv += '<div class="conditionAttr form-group">';
+    _mydiv += '<label class="col-lg-1 control-label">{{Quand }}</label>';
+    _mydiv += '<div class="col-lg-1 has-success">';
+    _mydiv += '<a class="btn btn-default btn-sm listCmdInfo btn-success" data-type="' + _type + '"><i class="fa fa-list-alt"></i></a>';
+    _mydiv += '</div>';
+    _mydiv += '<div class="col-lg-2 has-success">';
+    _mydiv += '<input class="triggerAttr form-control input-sm" data-l1key="cmd" data-type="' + _type + '"/>';
+    _mydiv += '</div>';
+    _mydiv += '<div class="col-lg-1 has-success">';
+    _mydiv += '<select style="" class="triggerAttr form-control input-sm" data-l1key="operande">';
+    _mydiv += '<option value="<"><</option>';
+    _mydiv += '<option value="==">=</option>';
+    _mydiv += '<option value=">">></option>';
+    _mydiv += '<option value="!=">!=</option>';
+    _mydiv += '<option value="~">Contient</option>';
+    _mydiv += '</select>';
+    _mydiv += '</div>';
+    _mydiv += '<div class="col-lg-2 has-success">';
+    _mydiv += '<input class="triggerAttr form-control input-sm" data-l1key="comp_value" />';
+    _mydiv += '</div>';	
+    _mydiv += '<label class="col-lg-1 control-label">{{Après :}}</label>';
+    _mydiv += '<div class="col-lg-1 has-success text-right">';
+    _mydiv += '<input class="triggerAttr form-control input-sm" data-l1key="waitDelay" />';
+    _mydiv += '</div>';
+    _mydiv += '<label class="col-lg-1 control-label">{{minute(s)}}</label>';
+    _mydiv += '<div class="col-lg-1 text-right">';
+    _mydiv += '<select style="" class="triggerAttr form-control input-sm" data-l1key="and">';
+    _mydiv += '<option value="-1">Seule</option>';
+    _mydiv += '<option value="1">Et</option>';
+    _mydiv += '<option value="0">Ou</option>';
+    _mydiv += '</select>';
+    _mydiv += '</div>';
+    _mydiv += '<div class="col-lg-1">';
+    _mydiv += '<i class="fa fa-minus-circle pull-left cursor bt_removeTrigger" data-type="' + _type + '"></i>';
+    _mydiv += '</div>';
+    _mydiv += '</div>';
+    $('#div_' + _type).append(_mydiv);
     $('#div_' + _type + ' .' + _type + ':last').setValues(_trigger, '.triggerAttr');
 }
-
 
 function addSimu(_type, _trigger, _el) {
     if (!isset(_trigger)) {
         _trigger = {};
     }
-    var div = '<div class="'+_type+'">';
-    div += '<div class="form-group">';
-    div += '<label class="col-lg-1 control-label">{{Début :}}</label>';
+    var _mydiv = '<div class="'+_type+'">';
+    _mydiv += '<div class="form-group">';
+    _mydiv += '<label class="col-lg-1 control-label">{{Début :}}</label>';
  
-    div += '<div class="col-lg-2 has-success">';
-    div += '<input class="triggerAttr form-control input-sm" placeholder="00:00" data-l1key="debut" data-type="' + _type + '"/>';
-    div += '</div>';
-    div += '<label class="col-lg-1 control-label">{{Fin :}}</label>';
-    div += '<div class="col-lg-2 has-success">';
-    div += '<input class="triggerAttr form-control input-sm" placeholder="00:00" data-l1key="fin" data-type="' + _type + '"/>';
-    div += '</div>';
-	div += '<label class="col-lg-2 control-label">{{Différé max (minutes):}}</label>';
-	div += '<div class="col-lg-2 has-success">';
-    div += '<input class="triggerAttr form-control input-sm" placeholder="00" data-l1key="differe" data-type="' + _type + '"/>';
-    div += '</div>';
+    _mydiv += '<div class="col-lg-2 has-success">';
+    _mydiv += '<input class="triggerAttr form-control input-sm" placeholder="00:00" data-l1key="debut" data-type="' + _type + '"/>';
+    _mydiv += '</div>';
+    _mydiv += '<label class="col-lg-1 control-label">{{Fin :}}</label>';
+    _mydiv += '<div class="col-lg-2 has-success">';
+    _mydiv += '<input class="triggerAttr form-control input-sm" placeholder="00:00" data-l1key="fin" data-type="' + _type + '"/>';
+    _mydiv += '</div>';
+    _mydiv += '<label class="col-lg-2 control-label">{{Différé max (minutes):}}</label>';
+    _mydiv += '<div class="col-lg-2 has-success">';
+    _mydiv += '<input class="triggerAttr form-control input-sm" placeholder="00" data-l1key="differe" data-type="' + _type + '"/>';
+    _mydiv += '</div>';
 	
-    div += '<div class="col-lg-2">';
-    div += '<i class="fa fa-minus-circle pull-left cursor bt_removeTrigger" data-type="' + _type + '"></i>';
-    div += '</div>';
-    div += '</div>';
-    $('#div_' + _type).append(div);
+    _mydiv += '<div class="col-lg-2">';
+    _mydiv += '<i class="fa fa-minus-circle pull-left cursor bt_removeTrigger" data-type="' + _type + '"></i>';
+    _mydiv += '</div>';
+    _mydiv += '</div>';
+    $('#div_' + _type).append(_mydiv);
     $('#div_' + _type + ' .' + _type + ':last').setValues(_trigger, '.triggerAttr');
 }

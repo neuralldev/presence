@@ -290,7 +290,6 @@ class presence extends eqLogic {
             $cmd->event($comeback);
         }
 
-
         $cmd = null;
 
         $last_declencheur = $this->getCmd(null, 'last_declencheur');
@@ -311,9 +310,7 @@ class presence extends eqLogic {
         $last_declencheur->setEventOnly(1);
         $last_declencheur->setOrder(10);
         $last_declencheur->save();
-
-
-
+        
         $lockState = $this->getCmd(null, 'lock_state');
         if (!is_object($lockState)) {
             $lockState = new presenceCmd();
@@ -468,12 +465,6 @@ class presence extends eqLogic {
         if ($this->getConfiguration('vacances_name') == "") {
             $this->setConfiguration('vacances_name', 'Vacances');
         }
-
-        /* presence::$_liste_maj_cmd = null;
-          presence::$_liste_maj_cmd = array_map(function($item) {
-          log::add('presence', 'debug', 'Nouvelles liste : ' . $item->getLogicalId());
-          return $item->getLogicalId();
-          }, $this->getCmd()); */
     }
 
     public function preRemove() {
