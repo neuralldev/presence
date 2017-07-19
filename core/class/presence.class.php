@@ -1061,7 +1061,7 @@ class presence extends eqLogic {
         } else {
             $exitactions = $this->getConfiguration('modes');
             if ($exitactions != NULL)
-                log::add('presence', 'debug', 'Traitement des actions de sortie');
+                log::add('presence', 'debug', 'Traitement des actions de sortie du mode '.$old_mode);
             foreach ($this->getConfiguration('modes') as $key => $value) {
                 if ($value['name'] == $old_mode) {
                     foreach ($value['action_exit'] as $_action) {
@@ -1497,7 +1497,7 @@ class presenceCmd extends cmd {
             log::add('presence', 'info', 'Mode précédent :' . $old_mode . ' / Mode choisi : ' . $this->getLogicalId());
             if ($cmd->getValue() != $this->getLogicalId()) {
                 $cmd = $eqLogic->getCmd('info', 'Mode');
-                log::add('presence', 'info', 'Changement manuel de mode :' . $cmd->getId());
+                log::add('presence', 'info', 'Changement manuel de mode : ' . $cmd->getId());
                 $cmd->setValue($this->getLogicalId());
                 $cmd->save();
                 $cmd->event($this->getLogicalId());
