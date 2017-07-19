@@ -1015,7 +1015,7 @@ class presence extends eqLogic {
     public function lancement_actions($mode, $old_mode) {
         log::add('presence', 'debug', 'Lancement des actions : entrée en mode (' . $mode . '), sortie du mode (' . $old_mode.')');
         $play_retour_actions = $this->getConfiguration('execute_return_holliday');
-        $_id = $this->getId;
+        $_id = $this->getId();
 
         if ($old_mode != "")
             log::add('presence', 'info', 'Déclenchement des actions de sortie du mode ' . $old_mode);
@@ -1536,26 +1536,25 @@ class presenceCmd extends cmd {
                 $cmd->save();
                 $eqLogic->refreshWidget();
             }
-            log::add('presence', 'event', 'Je passe dans le execmd');
+//            log::add('presence', 'event', 'Je passe dans le execmd');
         }
         $eqLogic->refreshWidget();
     }
 
     public function formatValueWidget($_mode) {
         $eqLogic = $this->getEqLogic();
-        $return = '';
+        $str = '';
         if ($eqLogic->getConfiguration('display_names', 0) == 1) {
-            $return = '<div style="font-weight: bold;font-size : 12px;">' . str_replace("_", " ", $_mode) . '</div>';
+            $str = '<div style="font-weight: bold;font-size : 12px;">' . str_replace("_", " ", $_mode) . '</div>';
         }
         foreach ($eqLogic->getConfiguration('modes') as $key => $value) {
             if ($value['name'] == $_mode) {
                 if (isset($value['icon']) && $value['icon'] != '') {
-                    return $return . $value['icon'];
+                    return $str . $value['icon'];
                 }
             }
         }
         return $_mode;
     }
-
 }
 ?>

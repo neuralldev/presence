@@ -3,7 +3,9 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Thierry/Documents/NetBeansProjects/presence/core/class/presence.class.php</file>
+            <file>file:/C:/Users/Thierry/Documents/NetBeansProjects/presence/core/template/dashboard/cmd.action.other.button_presence_string.html</file>
+            <file>file:/C:/Users/Thierry/Documents/NetBeansProjects/presence/core/template/dashboard/cmd.action.other.locker.html</file>
+            <file>file:/C:/Users/Thierry/Documents/NetBeansProjects/presence/core/template/dashboard/presence.html</file>
         </group>
     </open-files>
 </project-private>

@@ -19,7 +19,6 @@
 		}
 		$('.cmd[data-cmd_uid=#uid#] .action').off();
         $('.cmd[data-cmd_uid=#uid#] .action').on('click', function () {
-			console.log("bug");
             jeedom.cmd.execute({id: '#id#'});
         });
 	</script>
