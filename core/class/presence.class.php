@@ -525,7 +525,8 @@ class presence extends eqLogic {
     // $token contient la direction exec_depart ou exec_arrivee
     private function defineActionAndRun($_action, $_skip, $_token, $_exec, $_setcache) {
         $i = 0;
-
+        if ($_action == NULL) return $i;
+        if (!array_key_exists('cmd', $_action)) return $i;
         if ($_action['cmd'] == 'scenario') {
             $_tmp_scenario = scenario::byID($_action['options']['scenario_id']);
             log::add('presence', 'info', 'Exécution du scénario ' . $_tmp_scenario->getName());
@@ -951,7 +952,7 @@ class presence extends eqLogic {
         $_datetime1 = $_datetime1->format('U');
         $_datetime2 = time();
         $_interval = $_datetime2 - $_datetime1;
-        if (intval($interval) > 0) {
+        if (intval($_interval) > 0) {
             cache::set('presence::' . $_id . '::locker_vacances', 0, 0);
             log::add('presence', 'info', ' ==> Mode vacances terminé');
             $cmd_retour->setIsVisible(0);
@@ -1368,7 +1369,7 @@ class presence extends eqLogic {
             log::add('presence','debug','delta='.$delta.' time_tmp='.presence::$_time_tmp );
 
             if ($delta <= presence::$_time_tmp && $delta >= 0) {
-                presence::$_time_tmp = $interval;
+                presence::$_time_tmp = $delta;
             }
 
             $stampEnd = mktime($stop[0], $stop[1], 0, date("m"), date("d"), date("Y"));
@@ -1381,7 +1382,7 @@ class presence extends eqLogic {
 //            $interval = $datetime1 - $datetime2;
 
             if ($delta <= presence::$_time_tmp && $delta >= 0) {
-                presence::$_time_tmp = $interval;
+                presence::$_time_tmp = $delta;
             }
 
             log::add('presence', 'debug', '==> Dans ' . presence::$_time_tmp . ' secondes');
