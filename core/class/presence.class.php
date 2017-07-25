@@ -990,6 +990,7 @@ class presence extends eqLogic {
 
         //log::add('presence', 'debug', 'FIN du RAZ');
         $cmd_retour = $this->getCmd('info', 'Retour');
+        if ($cmd_retour != NULL) {
         //log::add('presence', 'debug', $cmd_retour->getValue());
         // date/heure de retour
         $_datetime1 = DateTime::createFromFormat('d-m-Y H:i', $cmd_retour->getValue());
@@ -1000,6 +1001,8 @@ class presence extends eqLogic {
         //log::add('presence','debug','datetime2 (s): ' . $_datetime2);
         // différence en seconde entre les deux dates
         $_interval = $_datetime2 - $_datetime1;
+        } else
+            $_interval = 0;
         log::add('presence', 'debug', 'Interval (s): ' . intval($_interval));
         if (intval($_interval) > 0) {
             message::add('Présence', 'Veuillez renseigner une date de retour ultérieure.', null, null);
